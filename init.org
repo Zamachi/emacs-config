@@ -57,15 +57,14 @@
        '(scroll-bar-mode nil)
        '(tool-bar-mode nil)
        '(tooltip-mode nil))
-      (custom-set-faces
-       ;; custom-set-faces was added by Custom.
-       ;; If you edit it by hand, you could mess it up, so be careful.
-       ;; Your init file should contain only one such instance.
-       ;; If there is more than one, they won't work right.
-       '(default ((t (:family "Source Code Pro Medium" :foundry "outline" :slant normal :weight normal :height 120 :width normal))))
-       '(fixed-pitch nil :font "Fira Code Retina" :height 260)
-       '(variable-pitch nil :font "DejaVu Sans Mono 13" :height 295 :weight 'regular)
-       )
+#+end_src
+* Font config
+This is a font configuration
+Use Hydra to scale the text as needed
+#+begin_src emacs-lisp
+  (set-face-attribute 'default nil :font "Fira Code Retina" :height 100)
+  (set-face-attribute 'fixed-pitch nil :font "Fira Code Retina" :height 100)
+  (set-face-attribute 'variable-pitch nil :font "Cantarell" :height 120)
 #+end_src
 
 * Keybinding configurations
@@ -258,7 +257,7 @@ Kako se koristi
 
 ** Helpful
 
-koristi counsel funkcionalnosti i helpful funkcionalnosti da overriduje defaultna ponasanja emacs-a
+koristi counsel funkcionalnosti i helpful funkcionalnosti da overriduje defaultna ponasanja emacs-a npr. za describe-function ili bilo koje druge describe- funkcionalnosti
 
 #+begin_src emacs-lisp
 (use-package helpful
@@ -426,14 +425,19 @@ LSP je Language Server Protocol koji se koristi da dostavi informaciju o autocom
 
 Usage of LSP - works only if language is provided:
 
-| command                    | shortcut  | description                                       |
-|----------------------------+-----------+---------------------------------------------------|
-| Find references            | C-c l g r | Pronalazi sve reference selektovanog simbola radi |
-| Find definitions           | C-c l g g | Isto kao iznad, samo pronalazi  definicije        |
-| Rename                     | C-c l r r | Preimenuje selektovan simbol                      |
-| Flymake diagnostics buffer |           | Dijagnostika gresaka u datom fajlu - greske, warn |
-| Code formatting            | C-c l = = | Reformatira kod kako ih language serv. formatira  |
-|                            |           |                                                   |
+| command                      | shortcut    | description                                       |
+|------------------------------+-------------+---------------------------------------------------|
+| Find references              | C-c l g r   | Pronalazi sve reference selektovanog simbola radi |
+| Find definitions             | C-c l g g   | Isto kao iznad, samo pronalazi  definicije        |
+| Rename                       | C-c l r r   | Preimenuje selektovan simbol                      |
+| Flymake diagnostics buffer   |             | Dijagnostika gresaka u datom fajlu - greske, warn |
+| Code formatting              | C-c l = =   | Reformatira kod kako ih language serv. formatira  |
+| lsp-treemacs-symbols         | M-x command | Show a tree view of symbols in the file           |
+| lsp-treemacs-references      | M-x command | Show a tree view for refs of symbol under cursor  |
+| lsp-treemacs-error-list      | M-x command | Show a tree veiw for diagnostic msgs              |
+| lsp-ivy-workspace-symb       | M-x command | Search for a symbol name in the current project   |
+| lsp-ivy-global-workspace-sym | M-x command | Searches in all active project workspaces         |
+|                              |             |                                                   |
 **** Documentation
 
 [[https://github.com/emacs-lsp/lsp-ui][LSP-UI documentation]]
@@ -449,6 +453,10 @@ Usage of LSP - works only if language is provided:
 #+end_src
 
 ** Company mode
+
+Provides a nicer in-buffer completion interface.
+Company box further enhances the looks and icons and presentation
+
 #+begin_src emacs-lisp
     (use-package company
       :after lsp-mode
@@ -463,6 +471,9 @@ Usage of LSP - works only if language is provided:
   (use-package company-box
   :hook(company-mode . company-box-mode))
 #+end_src
+
+Hitting TAB is for completion
+
 ** Projectile
 
  Emacs ima koncept DIRECTORY LOCAL VARIABLES - kreira se fajl u repo folderu koji konfigurise emacs varijable, koje ce se primeniti na odredjene fajlove u projektu svaki put kad se otvori bafer koji cita fajl iz datog foldera:
@@ -481,8 +492,8 @@ Usage of LSP - works only if language is provided:
     :bind-keymap
     ("C-c p" . projectile-command-map)
     :init
-    (when (file-directory-p "~/Projects")
-      (setq projectile-project-search-path '("~/Projects")))
+    (when (file-directory-p "~/Projects") ;;NOTE: set this path to where you keep git repos
+      (setq projectile-project-search-path '("~/Projects"))) ;;NOTE: same for this
     (setq projectile-switch-project-action #'projectile-dired))
 
   (use-package counsel-projectile
@@ -507,9 +518,10 @@ Usage of LSP - works only if language is provided:
 
 ** Basic Magit setup
 #+begin_src emacs-lisp
-(use-package magit
-  :custom
-  (magit-display-buffer-function #'magit-display-buffer-same-window-except-diff-v1))
+  (use-package magit
+    :custom
+    (magit-display-buffer-function #'magit-display-buffer-same-window-except-diff-v1))
+
 #+end_src
 
 | Funkcija       | skracenica | opis                                                    |
@@ -539,8 +551,14 @@ Usage of LSP - works only if language is provided:
 (use-package forge);;pruza informacije o nekom repozitorijumu, zahteva autentifikaciju sa GitHubom da bi se koristila. PROCITATI DOKUMENTACIJU 
 #+end_src
 
-[[https://github.com/magit/forge][Documentation page for Forge
-]]
+[[https://github.com/magit/forge][Documentation page for Forge]]
+
+NOTE: konfigurisi GitHub token pre nego sto koristis Forge!
+
+[[https://magit.vc/manual/forge/Token-Creation.html#Token-Creation][*** Kreacija tokena]]
+[[https://magit.vc/manual/ghub/Getting-Started.html#Getting-Started][*** Getting started]]
+
+
 ** Rainbow delimiters
 
 Delimiteri duginih boja kao visual aid tokom razvoja
@@ -568,6 +586,34 @@ The first time you call the devdocs-lookup will show a list of docs to search ( 
 #+end_src
 
 * Terminals
+
+** vterm
+
+This is the terminal emulator part specifically tailored for Linux OS-es(doesn't work on Windows)
+
+*** vterm
+
+Improved terminal emulator.
+Before installing, make sure you have the following dependencies installed:
+
+| dependency name | version | description                                                   |
+|-----------------+---------+---------------------------------------------------------------|
+| GNU Emacs       | >=25.1  | With module support - check that module-file-suffix isn't nil |
+| cmake           | >=3.11  | For makefiles                                                 |
+| libtool-bin     |         | Related issues: [[https://github.com/akermu/emacs-libvterm/issues/66][#66]] [[https://github.com/akermu/emacs-libvterm/issues/85#issuecomment-491845136][#85]]                                       |
+| libvterm        | >=0.1   | If it throws VTERM_COLOR during compilation, check [[https://github.com/akermu/emacs-libvterm/#frequently-asked-questions-and-problems][FAQ]]        |
+|                 |         |                                                               |
+
+#+begin_src emacs-lisp
+  (if (eq system-type 'gnu/linux)
+      (use-package vterm
+        :commands vterm
+        :config
+        (setq term-prompt-regexp "^[^#$%\n]*[#$%>] *")
+        ;;(setq vterm-shell "zsh") ;;for custom shell launch
+        (setq vterm-max-scrollback 10000))
+    )
+#+end_src
 
 ** Eshell
 
@@ -601,6 +647,14 @@ The first time you call the devdocs-lookup will show a list of docs to search ( 
 
   (eshell-git-prompt-use-theme 'powerline))
 #+end_src
+
+*** Useful keybindings:
+| Shortcut            | Description                               |
+|---------------------+-------------------------------------------|
+| C-c C-p / C-c C-n   | Go back or forward in the buffer          |
+| M-p / M-n           | Go back and forward in the input history  |
+| C-c C-u             | Delete the current input string backwards |
+| counsel-esh-history | A searchable history of eshell            |
 
 * Dired
 

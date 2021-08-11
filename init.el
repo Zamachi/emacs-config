@@ -47,15 +47,10 @@
      '(scroll-bar-mode nil)
      '(tool-bar-mode nil)
      '(tooltip-mode nil))
-    (custom-set-faces
-     ;; custom-set-faces was added by Custom.
-     ;; If you edit it by hand, you could mess it up, so be careful.
-     ;; Your init file should contain only one such instance.
-     ;; If there is more than one, they won't work right.
-     '(default ((t (:family "Source Code Pro Medium" :foundry "outline" :slant normal :weight normal :height 120 :width normal))))
-     '(fixed-pitch nil :font "Fira Code Retina" :height 260)
-     '(variable-pitch nil :font "DejaVu Sans Mono 13" :height 295 :weight 'regular)
-     )
+
+(set-face-attribute 'default nil :font "Fira Code Retina" :height 100)
+(set-face-attribute 'fixed-pitch nil :font "Fira Code Retina" :height 100)
+(set-face-attribute 'variable-pitch nil :font "Cantarell" :height 120)
 
 (use-package general
   :config
@@ -309,8 +304,8 @@
   :bind-keymap
   ("C-c p" . projectile-command-map)
   :init
-  (when (file-directory-p "~/Projects")
-    (setq projectile-project-search-path '("~/Projects")))
+  (when (file-directory-p "~/Projects") ;;NOTE: set this path to where you keep git repos
+    (setq projectile-project-search-path '("~/Projects"))) ;;NOTE: same for this
   (setq projectile-switch-project-action #'projectile-dired))
 
 (use-package counsel-projectile
@@ -329,6 +324,15 @@
 
 ;;(add-hook 'python-mode-hook
 ;;          (lambda () (setq-local devdocs-current-docs '("python~3.9"))))
+
+(if (eq system-type 'gnu/linux)
+    (use-package vterm
+      :commands vterm
+      :config
+      (setq term-prompt-regexp "^[^#$%\n]*[#$%>] *")
+      ;;(setq vterm-shell "zsh") ;;for custom shell launch
+      (setq vterm-max-scrollback 10000))
+  )
 
 (defun efs/configure-eshell ()
   ;; Save command history when commands are entered
