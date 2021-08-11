@@ -453,6 +453,21 @@ Usage of LSP - works only if language is provided:
   (setq typescript-indent-level 2))
 #+end_src
 
+*** Lua
+
+#+begin_src emacs-lisp
+  (use-package lua-mode
+    :mode "\\.lua\\'"
+    :hook (lua-mode . lsp-deferred)
+  )
+#+end_src
+
+**** Love minor mode
+
+#+begin_src emacs-lisp
+  ;;(use-package love-minor-mode)
+#+end_src
+
 ** Company mode
 
 Provides a nicer in-buffer completion interface.
