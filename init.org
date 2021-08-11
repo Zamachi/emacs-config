@@ -59,12 +59,13 @@
        '(tooltip-mode nil))
 #+end_src
 * Font config
-This is a font configuration
-Use Hydra to scale the text as needed
+This is a font configuration. 
+Use Hydra to scale the text as needed.
+WARNING: If fonts are not installed on your system, you have to install them manually.
 #+begin_src emacs-lisp
   (set-face-attribute 'default nil :font "Fira Code Retina" :height 100)
   (set-face-attribute 'fixed-pitch nil :font "Fira Code Retina" :height 100)
-  (set-face-attribute 'variable-pitch nil :font "Cantarell" :height 120)
+  (set-face-attribute 'variable-pitch nil :font "Cantarell" :height 120 :weight 'regular)
 #+end_src
 
 * Keybinding configurations
@@ -308,7 +309,7 @@ Primer koriscenja: zamislimo da imamo C-c j i C-c k bindovano u konfiguraciji, i
                   (org-level-6 . 1.1)
                   (org-level-7 . 1.1)
                   (org-level-8 . 1.1)))
-    (set-face-attribute (car face) nil :font "DejaVu Sans Mono 13" :weight 'regular :height (cdr face)))
+    (set-face-attribute (car face) nil :font "Cantarell" :weight 'regular :height (cdr face)))
 
   ;; Ensure that anything that should be fixed-pitch in Org files appears that way
   (set-face-attribute 'org-block nil :foreground nil :inherit 'fixed-pitch)
