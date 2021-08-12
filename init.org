@@ -2,6 +2,25 @@
 #+title My emacs configuration
 #+PROPERTY: header-args:emacs-lisp :tangle ~/.emacs.d/init.el :mkdirp yes
 
+* Startup Performance
+
+this section is meant to improve startup performance
+
+#+begin_src emacs-lisp
+  (setq gc-cons-treshold (* 50 1000 1000))
+
+
+  (defun zamachi/display-startup-time ()
+    (message "Emacs loaded in %s with %d garbage collections."
+             (format "%.2f seconds"
+                     (float-time
+                      (time-subtract after-init-time before-init-time)))
+             gcs-done))
+
+  (add-hook 'emacs-startup-hook #'zamachi/display-startup-time)
+
+#+end_src
+
 * Package System Setup
 #+begin_src emacs-lisp
   (require 'package)
@@ -225,38 +244,39 @@ Swiper je alternativa za ugradjeni isearch koji dobro radi sa Ivyjem
 Counsel pruzi ekvivalente za Emacs komande(sa nekim dodatnim opcijama) (counsel-mode)
 
 #+begin_src emacs-lisp
-;;koristi ivy package, koji ima bolji autocomplete za meta- funkcional.(medju ostalim funkc.)
+  ;;koristi ivy package, koji ima bolji autocomplete za meta- funkcional.(medju ostalim funkc.)
 
-(use-package ivy
-  :diminish
-  :bind (("C-s" . swiper)
-         :map ivy-minibuffer-map
-         ("TAB" . ivy-alt-done)
-         ("C-f" . ivy-alt-done)
-         ("C-l" . ivy-alt-done)
-         ("C-j" . ivy-next-line)
-         ("C-k" . ivy-previous-line)
-         :map ivy-switch-buffer-map
-         ("C-k" . ivy-previous-line)
-         ("C-l" . ivy-done)
-         ("C-d" . ivy-switch-buffer-kill)
-         :map ivy-reverse-i-search-map
-         ("C-k" . ivy-previous-line)
-         ("C-d" . ivy-reverse-i-search-kill))
-  :init
-  (ivy-mode 1))
-;;obogacuje ivy packet sa opisom funkcionalnosti i keybindovima(ako ih imaju)
-(use-package ivy-rich
-  :init
-  (ivy-rich-mode 1))
+  (use-package ivy
+    :diminish
+    :bind (("C-s" . swiper)
+           :map ivy-minibuffer-map
+           ("TAB" . ivy-alt-done)
+           ("C-f" . ivy-alt-done)
+           ("C-l" . ivy-alt-done)
+           ("C-j" . ivy-next-line)
+           ("C-k" . ivy-previous-line)
+           :map ivy-switch-buffer-map
+           ("C-k" . ivy-previous-line)
+           ("C-l" . ivy-done)
+           ("C-d" . ivy-switch-buffer-kill)
+           :map ivy-reverse-i-search-map
+           ("C-k" . ivy-previous-line)
+           ("C-d" . ivy-reverse-i-search-kill))
+    :config
+    (ivy-mode 1))
+  ;;obogacuje ivy packet sa opisom funkcionalnosti i keybindovima(ako ih imaju)
+  (use-package ivy-rich
+    :after ivy
+    :init
+    (ivy-rich-mode 1))
 
-;;counsel paket, koji koristi ivy rich, da dodatno obogati meta-pretrage, C-x C-f i dr.
-(use-package counsel
-  :bind (("M-x" . counsel-M-x)
-         ("C-x b" . counsel-ibuffer)
-         ("C-x C-f" . counsel-find-file)
-         :map minibuffer-local-map
-         ("C-r" . 'counsel-minibuffer-history)))
+  ;;counsel paket, koji koristi ivy rich, da dodatno obogati meta-pretrage, C-x C-f i dr.
+  (use-package counsel
+    :bind (("M-x" . counsel-M-x)
+           ("C-x b" . counsel-ibuffer)
+           ("C-x C-f" . counsel-find-file)
+           :map minibuffer-local-map
+           ("C-r" . 'counsel-minibuffer-history)))
 #+end_src
 
 Kako se koristi
@@ -273,15 +293,16 @@ Kako se koristi
 koristi counsel funkcionalnosti i helpful funkcionalnosti da overriduje defaultna ponasanja emacs-a npr. za describe-function ili bilo koje druge describe- funkcionalnosti
 
 #+begin_src emacs-lisp
-(use-package helpful
-  :custom
-  (counsel-describe-function-function #'helpful-callable)
-  (counsel-describe-variable-function #'helpful-variable)
-  :bind
-  ([remap describe-function] . counsel-describe-function)
-  ([remap describe-command] . helpful-command)
-  ([remap describe-variable] . counsel-describe-variable)
-  ([remap describe-key] . helpful-key))
+  (use-package helpful
+    :commands (helpful-callable helpful-variable helpful-command helpful-key)
+    :custom
+    (counsel-describe-function-function #'helpful-callable)
+    (counsel-describe-variable-function #'helpful-variable)
+    :bind
+    ([remap describe-function] . counsel-describe-function)
+    ([remap describe-command] . helpful-command)
+    ([remap describe-variable] . counsel-describe-variable)
+    ([remap describe-key] . helpful-key))
 #+end_src
 
 ** Text scaling
@@ -291,16 +312,17 @@ Hydra se koristi kod buffer cycling-a, ali i za skaliranje teksta
 Primer koriscenja: zamislimo da imamo C-c j i C-c k bindovano u konfiguraciji, i zelimo te dve komande da pozivamo u nekoj proizvoljnoj sekvenci, npr. C-c jjkkjkjkj, ovo nam dozvoljava Hydra paket, da ne pretiskamo C-c svaki put, vec samo jednom i da u sekvenci mozemo da zadajemo jjkkkjj naredbe, sto smo ovde iskoristili za povecavanje teksta.
 
 #+begin_src emacs-lisp
-(use-package hydra)
+  (use-package hydra
+    :defer t)
 
-(defhydra hydra-text-scale (:timeout 4)
-  "scale text"
-  ("j" text-scale-increase "in")
-  ("k" text-scale-decrease "out")
-  ("f" nil "finished" :exit t))
+  (defhydra hydra-text-scale (:timeout 4)
+    "scale text"
+    ("j" text-scale-increase "in")
+    ("k" text-scale-decrease "out")
+    ("f" nil "finished" :exit t))
 
-(zama/leader-keys
-  "ts" '(hydra-text-scale/body :which-key "scale text"))
+  (zama/leader-keys
+    "ts" '(hydra-text-scale/body :which-key "scale text"))
 #+end_src
 
 * Org mode
@@ -334,19 +356,21 @@ Primer koriscenja: zamislimo da imamo C-c j i C-c k bindovano u konfiguraciji, i
 #+end_src
 ** Basic org mode conf
 #+begin_src emacs-lisp
-(defun efs/org-mode-setup ()
-  (org-indent-mode)
-  (variable-pitch-mode 1)
-  (auto-fill-mode 0)
-  (visual-line-mode 1)
-  (setq evil-auto-indend nil))
+  (defun efs/org-mode-setup ()
+    (org-indent-mode)
+    (variable-pitch-mode 1)
+    (auto-fill-mode 0)
+    (visual-line-mode 1)
+    (setq evil-auto-indend nil))
 
-(use-package org
-  :hook (org-mode . efs/org-mode-setup)
-  :config
-  (setq org-ellipsis " ▼"
-	org-hide-emphasis-markers t)
-  (efs/org-font-setup))
+  (use-package org
+    :pin org
+    :commands (org-capture)
+    :hook (org-mode . efs/org-mode-setup)
+    :config
+    (setq org-ellipsis " ▼"
+          org-hide-emphasis-markers t)
+    (efs/org-font-setup))
 #+end_src
 ** Nicer bullets for headings
 #+begin_src emacs-lisp
@@ -370,19 +394,21 @@ Primer koriscenja: zamislimo da imamo C-c j i C-c k bindovano u konfiguraciji, i
 ** Configure babel languages
 
 #+begin_src emacs-lisp
-(org-babel-do-load-languages 
- 'org-babel-load-languages
- '((emacs-lisp . t)
-   (python . t)));;specify which languages babel can execute
-(push '("conf-unix" . conf-unix) org-src-lang-modes)
-(setq org-confirm-babel-evaluate nil);;turn off the question "if u wanna execute this block of code"
+(with-eval-after-load 'org
+  (org-babel-do-load-languages 
+   'org-babel-load-languages
+   '((emacs-lisp . t)
+     (python . t)));;specify which languages babel can execute
+  (push '("conf-unix" . conf-unix) org-src-lang-modes))
+  (setq org-confirm-babel-evaluate nil);;turn off the question "if u wanna execute this block of code"
 
 #+end_src
 ** Structure templates
 #+begin_src emacs-lisp
+(with-eval-after-load 'org
   (require 'org-tempo)
 
-  (add-to-list 'org-structure-template-alist '("el" . "src emacs-lisp"))
+  (add-to-list 'org-structure-template-alist '("el" . "src emacs-lisp")))
 #+end_src
 
 ** Auto-tangle configuration files
@@ -411,29 +437,30 @@ Basically automatically tangles this config file(saves it to another file), but 
 LSP je Language Server Protocol koji se koristi da dostavi informaciju o autocompletion-u i slicnim stvarima vezanim za sintaksu jezika.
 
 #+begin_src emacs-lisp
-  (defun efs/lsp-mode-setup ()
-    (setq lsp-headerline-breadcrumb-segments '(path-up-to-project file symbols))
-    (lsp-headerline-breadcrumb-mode))
+    (defun efs/lsp-mode-setup ()
+      (setq lsp-headerline-breadcrumb-segments '(path-up-to-project file symbols))
+      (lsp-headerline-breadcrumb-mode))
 
-  (use-package lsp-mode
-    :commands(lsp lsp-deferred)
-    :hook(lsp-mode . efs/lsp-mode-setup)
-    :init
-    (setq lsp-keymap-prefix "C-c l");;or change it to whatever u like
-    :config
-    (lsp-enable-which-key-integration t))
+    (use-package lsp-mode
+      :commands(lsp lsp-deferred)
+      :hook(lsp-mode . efs/lsp-mode-setup)
+      :init
+      (setq lsp-keymap-prefix "C-c l");;or change it to whatever u like
+      :config
+      (lsp-enable-which-key-integration t))
 
-  (use-package lsp-ui
-    :hook(lsp-mode . lsp-ui-mode)
-    :custom
-    (lsp-ui-doc-position 'bottom))
+    (use-package lsp-ui
+      :hook(lsp-mode . lsp-ui-mode)
+      :custom
+      (lsp-ui-doc-position 'bottom))
 
-  (use-package lsp-treemacs
-    :after lsp);;lsp-treemacs menu
-  ;;we can also enable the sideline via lsp-ui-sideline-enable and lsp-ui-sideline-show-hover
+    (use-package lsp-treemacs
+      :after lsp);;lsp-treemacs menu
+    ;;we can also enable the sideline via lsp-ui-sideline-enable and lsp-ui-sideline-show-hover
 
-  (use-package lsp-ivy)
-  ;;lsp-ivy-workspace-symbol usage
+    (use-package lsp-ivy
+      :after lsp)
+    ;;lsp-ivy-workspace-symbol usage
 #+end_src
 
 Usage of LSP - works only if language is provided:
@@ -450,7 +477,7 @@ Usage of LSP - works only if language is provided:
 | lsp-treemacs-error-list      | M-x command | Show a tree veiw for diagnostic msgs              |
 | lsp-ivy-workspace-symb       | M-x command | Search for a symbol name in the current project   |
 | lsp-ivy-global-workspace-sym | M-x command | Searches in all active project workspaces         |
-|                              |             |                                                   |
+|                              |             |                                                  |
 **** Documentation
 
 [[https://github.com/emacs-lsp/lsp-ui][LSP-UI documentation]]
@@ -525,6 +552,7 @@ Hitting TAB is for completion
     (setq projectile-switch-project-action #'projectile-dired))
 
   (use-package counsel-projectile
+    :after projectile
     :config (counsel-projectile-mode))
 #+end_src
 
@@ -547,6 +575,7 @@ Hitting TAB is for completion
 ** Basic Magit setup
 #+begin_src emacs-lisp
   (use-package magit
+    :commands magit-status
     :custom
     (magit-display-buffer-function #'magit-display-buffer-same-window-except-diff-v1))
 
@@ -576,7 +605,8 @@ Hitting TAB is for completion
 
 ** Forge
 #+begin_src emacs-lisp
-(use-package forge);;pruza informacije o nekom repozitorijumu, zahteva autentifikaciju sa GitHubom da bi se koristila. PROCITATI DOKUMENTACIJU 
+  (use-package forge
+    :after magit);;pruza informacije o nekom repozitorijumu, zahteva autentifikaciju sa GitHubom da bi se koristila. PROCITATI DOKUMENTACIJU 
 #+end_src
 
 [[https://github.com/magit/forge][Documentation page for Forge]]
@@ -646,34 +676,35 @@ Before installing, make sure you have the following dependencies installed:
 ** Eshell
 
 #+begin_src emacs-lisp
-(defun efs/configure-eshell ()
-  ;; Save command history when commands are entered
-  (add-hook 'eshell-pre-command-hook 'eshell-save-some-history)
+  (defun efs/configure-eshell ()
+    ;; Save command history when commands are entered
+    (add-hook 'eshell-pre-command-hook 'eshell-save-some-history)
 
-  ;; Truncate buffer for performance
-  (add-to-list 'eshell-output-filter-functions 'eshell-truncate-buffer)
+    ;; Truncate buffer for performance
+    (add-to-list 'eshell-output-filter-functions 'eshell-truncate-buffer)
 
-  ;; Bind some useful keys for evil-mode
-  (evil-define-key '(normal insert visual) eshell-mode-map (kbd "C-r") 'counsel-esh-history)
-  (evil-define-key '(normal insert visual) eshell-mode-map (kbd "<home>") 'eshell-bol)
-  (evil-normalize-keymaps)
+    ;; Bind some useful keys for evil-mode
+    (evil-define-key '(normal insert visual) eshell-mode-map (kbd "C-r") 'counsel-esh-history)
+    (evil-define-key '(normal insert visual) eshell-mode-map (kbd "<home>") 'eshell-bol)
+    (evil-normalize-keymaps)
 
-  (setq eshell-history-size         10000
-        eshell-buffer-maximum-lines 10000
-        eshell-hist-ignoredups t
-        eshell-scroll-to-bottom-on-input t))
+    (setq eshell-history-size         10000
+          eshell-buffer-maximum-lines 10000
+          eshell-hist-ignoredups t
+          eshell-scroll-to-bottom-on-input t))
 
-(use-package eshell-git-prompt)
+  (use-package eshell-git-prompt
+    :after eshell)
 
-(use-package eshell
-  :hook (eshell-first-time-mode . efs/configure-eshell)
-  :config
+  (use-package eshell
+    :hook (eshell-first-time-mode . efs/configure-eshell)
+    :config
 
-  (with-eval-after-load 'esh-opt
-    (setq eshell-destroy-buffer-when-process-dies t)
-    (setq eshell-visual-commands '("htop" "zsh" "vim")))
+    (with-eval-after-load 'esh-opt
+      (setq eshell-destroy-buffer-when-process-dies t)
+      (setq eshell-visual-commands '("htop" "zsh" "vim")))
 
-  (eshell-git-prompt-use-theme 'powerline))
+    (eshell-git-prompt-use-theme 'powerline))
 #+end_src
 
 *** Useful keybindings:
@@ -689,4 +720,12 @@ Before installing, make sure you have the following dependencies installed:
 ** Dired basics
 #+begin_src emacs-lisp
 
+#+end_src
+
+* Runtime performance
+
+Garbace collection happens more frequently but in less time
+
+#+begin_src emacs-lisp
+(setq gc-cons-treshold (* 2 1000 1000))
 #+end_src

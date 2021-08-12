@@ -1,3 +1,15 @@
+(setq gc-cons-treshold (* 50 1000 1000))
+
+
+(defun zamachi/display-startup-time ()
+  (message "Emacs loaded in %s with %d garbage collections."
+           (format "%.2f seconds"
+                   (float-time
+                    (time-subtract after-init-time before-init-time)))
+           gcs-done))
+
+(add-hook 'emacs-startup-hook #'zamachi/display-startup-time)
+
 (require 'package)
   (setq package-archives '(("melpa" . "https://melpa.org/packages/")
                            ("melpa-stable" . "https://stable.melpa.org/packages/")
@@ -149,10 +161,11 @@
          :map ivy-reverse-i-search-map
          ("C-k" . ivy-previous-line)
          ("C-d" . ivy-reverse-i-search-kill))
-  :init
+  :config
   (ivy-mode 1))
 ;;obogacuje ivy packet sa opisom funkcionalnosti i keybindovima(ako ih imaju)
 (use-package ivy-rich
+  :after ivy
   :init
   (ivy-rich-mode 1))
 
@@ -165,6 +178,7 @@
          ("C-r" . 'counsel-minibuffer-history)))
 
 (use-package helpful
+  :commands (helpful-callable helpful-variable helpful-command helpful-key)
   :custom
   (counsel-describe-function-function #'helpful-callable)
   (counsel-describe-variable-function #'helpful-variable)
@@ -174,7 +188,8 @@
   ([remap describe-variable] . counsel-describe-variable)
   ([remap describe-key] . helpful-key))
 
-(use-package hydra)
+(use-package hydra
+  :defer t)
 
 (defhydra hydra-text-scale (:timeout 4)
   "scale text"
@@ -219,10 +234,12 @@
   (setq evil-auto-indend nil))
 
 (use-package org
+  :pin org
+  :commands (org-capture)
   :hook (org-mode . efs/org-mode-setup)
   :config
   (setq org-ellipsis " ▼"
-	org-hide-emphasis-markers t)
+        org-hide-emphasis-markers t)
   (efs/org-font-setup))
 
 (use-package org-bullets
@@ -239,16 +256,18 @@
 (use-package visual-fill-column
   :hook (org-mode . efs/org-mode-visual-fill))
 
-(org-babel-do-load-languages 
- 'org-babel-load-languages
- '((emacs-lisp . t)
-   (python . t)));;specify which languages babel can execute
-(push '("conf-unix" . conf-unix) org-src-lang-modes)
-(setq org-confirm-babel-evaluate nil);;turn off the question "if u wanna execute this block of code"
+(with-eval-after-load 'org
+  (org-babel-do-load-languages 
+   'org-babel-load-languages
+   '((emacs-lisp . t)
+     (python . t)));;specify which languages babel can execute
+  (push '("conf-unix" . conf-unix) org-src-lang-modes))
+  (setq org-confirm-babel-evaluate nil);;turn off the question "if u wanna execute this block of code"
 
-(require 'org-tempo)
+(with-eval-after-load 'org
+  (require 'org-tempo)
 
-(add-to-list 'org-structure-template-alist '("el" . "src emacs-lisp"))
+  (add-to-list 'org-structure-template-alist '("el" . "src emacs-lisp")))
 
 (defun efs/org-babel-tangle-config ()
   (when (string-equal (buffer-file-name)
@@ -283,7 +302,8 @@
   :after lsp);;lsp-treemacs menu
 ;;we can also enable the sideline via lsp-ui-sideline-enable and lsp-ui-sideline-show-hover
 
-(use-package lsp-ivy)
+(use-package lsp-ivy
+  :after lsp)
 ;;lsp-ivy-workspace-symbol usage
 
 (use-package typescript-mode
@@ -325,13 +345,16 @@
   (setq projectile-switch-project-action #'projectile-dired))
 
 (use-package counsel-projectile
+  :after projectile
   :config (counsel-projectile-mode))
 
 (use-package magit
+  :commands magit-status
   :custom
   (magit-display-buffer-function #'magit-display-buffer-same-window-except-diff-v1))
 
-(use-package forge);;pruza informacije o nekom repozitorijumu, zahteva autentifikaciju sa GitHubom da bi se koristila. PROCITATI DOKUMENTACIJU
+(use-package forge
+  :after magit);;pruza informacije o nekom repozitorijumu, zahteva autentifikaciju sa GitHubom da bi se koristila. PROCITATI DOKUMENTACIJU
 
 (use-package rainbow-delimiters
   :hook (prog-mode . rainbow-delimiters-mode))
@@ -367,7 +390,8 @@
         eshell-hist-ignoredups t
         eshell-scroll-to-bottom-on-input t))
 
-(use-package eshell-git-prompt)
+(use-package eshell-git-prompt
+  :after eshell)
 
 (use-package eshell
   :hook (eshell-first-time-mode . efs/configure-eshell)
@@ -380,3 +404,5 @@
   (eshell-git-prompt-use-theme 'powerline))
 
 
+
+(setq gc-cons-treshold (* 2 1000 1000))
