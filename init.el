@@ -10,23 +10,21 @@
 
 (add-hook 'emacs-startup-hook #'zamachi/display-startup-time)
 
-(require 'package)
-  (setq package-archives '(("melpa" . "https://melpa.org/packages/")
-                           ("melpa-stable" . "https://stable.melpa.org/packages/")
-                           ("org" . "https://orgmode.org/elpa/")
-                           ("elpa" . "https://elpa.gnu.org/packages/")))
+(defvar bootstrap-version)
+(let ((bootstrap-file
+       (expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory))
+      (bootstrap-version 5))
+  (unless (file-exists-p bootstrap-file)
+    (with-current-buffer
+        (url-retrieve-synchronously
+         "https://raw.githubusercontent.com/raxod502/straight.el/develop/install.el"
+         'silent 'inhibit-cookies)
+      (goto-char (point-max))
+      (eval-print-last-sexp)))
+  (load bootstrap-file nil 'nomessage))
 
-  (package-initialize)
-  ;;add-to-list dodaje u listu samo ako varijabla vec nije u njoj! setq dodaje bez obzira na to
-
-  (unless package-archive-contents
-    (package-refresh-contents));;proverava da li je package-archive-contents tu, neophodno je proveriti da li postoji na lokalu ili ne, refershuje listu paketa u sustini
-
-  (unless (package-installed-p 'use-package);;-p uvek na kraju znaci predikat(znaci ili true ili nil vrednost)
-    (package-install 'use-package));;Ako paket "use-package" nije instaliran, instaliraj ga
-
-(require 'use-package);;ukljucujemo paket
-(setq use-package-always-ensure t);;osigurava da paketi koji su neophodni i koji se koriste u datoj emacs konfiguraciji budu preuzeti prilikom pokretanja emacs-a, ukoliko nisu, zato nema potrebe da se navodi :ensure t za svaki fajl
+(straight-use-package 'use-package)
+(setq straight-use-package-by-default t)
 
 (use-package auto-package-update
   :custom
@@ -234,7 +232,6 @@
   (setq evil-auto-indend nil))
 
 (use-package org
-  :pin org
   :commands (org-capture)
   :hook (org-mode . efs/org-mode-setup)
   :config
@@ -403,6 +400,26 @@
 
   (eshell-git-prompt-use-theme 'powerline))
 
+(use-package dired
+  :straight nil
+  :commands (dired dired-jump)
+  :bind (("C-x C-j" . dired-jump))
+  :custom ((dired-listing-switches "-agho --group-directories-first"))
+  :config
+  (evil-collection-define-key 'normal 'dired-mode-map
+    "h" 'dired-single-up-directory
+    "l" 'dired-single-buffer))
 
+(use-package dired-single
+  :commands (dired dired-jump))
+
+(use-package all-the-icons-dired
+  :hook (dired-mode . all-the-icons-dired-mode))
+
+(use-package dired-open
+  :commands (dired dired-jump)
+  :config
+  (setq dired-open-extensions '(("png" . "feh")
+                                ("mkv" . "mpv"))))
 
 (setq gc-cons-treshold (* 2 1000 1000))

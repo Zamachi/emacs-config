@@ -22,26 +22,45 @@ this section is meant to improve startup performance
 #+end_src
 
 * Package System Setup
+
+Za menadzment paketa koristimo unapredjeni straight.el paket koji se integrise sa use-package-om
+
+For advanced package management, posto Emacs skida fajlove sa samo ona 4 gore definisana repozitorijuma, s ovim mozemo i sa GitHuba da skidamo projekte
+
+Koristi koncept "recept repozitorijuma" gde se nalaze detalji o source-u paketa koji se mogu instalirati(najcesce GitHub repo), pa na osnovu toga KLONIRA sam repozitorijum i pomocu skripte instalira paket. (naspram package.el koji samo instalira projekat sa M/ELPA ili ORG repozitorijuma)
+
+
 #+begin_src emacs-lisp
-  (require 'package)
-  (setq package-archives '(("melpa" . "https://melpa.org/packages/")
-                           ("melpa-stable" . "https://stable.melpa.org/packages/")
-                           ("org" . "https://orgmode.org/elpa/")
-                           ("elpa" . "https://elpa.gnu.org/packages/")))
 
-  (package-initialize)
-  ;;add-to-list dodaje u listu samo ako varijabla vec nije u njoj! setq dodaje bez obzira na to
+  (defvar bootstrap-version)
+  (let ((bootstrap-file
+         (expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory))
+        (bootstrap-version 5))
+    (unless (file-exists-p bootstrap-file)
+      (with-current-buffer
+          (url-retrieve-synchronously
+           "https://raw.githubusercontent.com/raxod502/straight.el/develop/install.el"
+           'silent 'inhibit-cookies)
+        (goto-char (point-max))
+        (eval-print-last-sexp)))
+    (load bootstrap-file nil 'nomessage))
 
-  (unless package-archive-contents
-    (package-refresh-contents));;proverava da li je package-archive-contents tu, neophodno je proveriti da li postoji na lokalu ili ne, refershuje listu paketa u sustini
-
-  (unless (package-installed-p 'use-package);;-p uvek na kraju znaci predikat(znaci ili true ili nil vrednost)
-    (package-install 'use-package));;Ako paket "use-package" nije instaliran, instaliraj ga
-
-(require 'use-package);;ukljucujemo paket
-(setq use-package-always-ensure t);;osigurava da paketi koji su neophodni i koji se koriste u datoj emacs konfiguraciji budu preuzeti prilikom pokretanja emacs-a, ukoliko nisu, zato nema potrebe da se navodi :ensure t za svaki fajl
+  (straight-use-package 'use-package)
+  (setq straight-use-package-by-default t)
 
 #+end_src
+
+Package management:
+
+| command                      | shortcut | description                          |
+|------------------------------+----------+--------------------------------------|
+| straight-pull-all            | N/A      | Apgrejduje sve aktivne pakete        |
+| straight-check-package       | N/A      | Reloaduje apgrejdovane pakete        |
+| straight-remove-unused-repos |          | Removes repos not present in init.el |
+|                              |          |                                      |
+
+To remove a package, just delete the line from the init.el file
+
 
 ** Automatically update packages
 #+begin_src emacs-lisp
@@ -54,6 +73,7 @@ this section is meant to improve startup performance
     (auto-package-update-maybe)
     (auto-package-update-at-time "23:00"))
 #+end_src
+
 * Basic UI Config
 
 #+begin_src emacs-lisp
@@ -364,7 +384,6 @@ Primer koriscenja: zamislimo da imamo C-c j i C-c k bindovano u konfiguraciji, i
     (setq evil-auto-indend nil))
 
   (use-package org
-    :pin org
     :commands (org-capture)
     :hook (org-mode . efs/org-mode-setup)
     :config
@@ -719,7 +738,102 @@ Before installing, make sure you have the following dependencies installed:
 
 ** Dired basics
 #+begin_src emacs-lisp
+  (use-package dired
+    :straight nil
+    :commands (dired dired-jump)
+    :bind (("C-x C-j" . dired-jump))
+    :custom ((dired-listing-switches "-agho --group-directories-first"))
+    :config
+    (evil-collection-define-key 'normal 'dired-mode-map
+      "h" 'dired-single-up-directory
+      "l" 'dired-single-buffer))
+#+end_src
 
+Navigation
+
+| shortcut              | description                                    |
+|-----------------------+------------------------------------------------|
+| n/j                   | next line                                      |
+| p/k                   | prev. line                                     |
+| j/J                   | jump to file in buffer                         |
+| RET                   | select file/dir                                |
+| "^"                   | go to parent dir                               |
+| S-RET/g O             | open file in the "other" window                |
+| M-RET                 | show file in the other window without focusing |
+| g o (dired-view-file) | open file in "preview mode". Close with q      |
+| g r                   | refresh buffer with "revert-buffer"            |
+
+Marking files
+
+| command                  | shortcut   | description                              |
+|--------------------------+------------+------------------------------------------|
+| Ivy enter input verbatim | Ctrl-Alt-j | completes input without Ivy completion   |
+|                          | m          | Marks a file                             |
+|                          | u          | Unmarks                                  |
+|                          | U          | Unmarks all files in the buffer          |
+|                          | * t / t    | inverts marked files                     |
+|                          | % m        | Mark files using regExp                  |
+|                          | *          | Other auto-mark funcs.                   |
+|                          | k / K      | Kill marked items(not delete, just hide) |
+|                          |            |                                          |
+
+Copying / renaming files
+
+| command                          | description                                            |
+|----------------------------------+--------------------------------------------------------|
+| C                                | copy marked files                                      |
+| U                                | unark all files                                        |
+| R                                | rename marked files                                    |
+| % R                              | rename based on regExp                                 |
+| C-x C-q (dired-toggle-read-only) | Makes all items editable directly. Press ZZ to confirm |
+|                                  |                                                        |
+
+Deleting files
+
+| command                   | description                |
+|---------------------------+----------------------------|
+| D                         | delete marked file         |
+| d                         | mark file for deletion     |
+| x                         | Execute deletion for marks |
+| delete-by-moving-to-trash | Self-describing            |
+|                           |                            |
+
+Creating and extracting archives
+
+| command                    | description                              |
+|----------------------------+------------------------------------------|
+| Z                          | (un)compress a file or folder to .tar.gz |
+| c                          | Compress selection to a specific file    |
+| dired-compress-files-alist | Tied to certain file extensions...       |
+|                            |                                          |
+
+** Dired single
+
+Uses only a single instance of Dired
+
+#+begin_src emacs-lisp
+  (use-package dired-single
+    :commands (dired dired-jump))
+
+  (use-package all-the-icons-dired
+    :hook (dired-mode . all-the-icons-dired-mode))
+#+end_src
+
+| command             | shortcut | description                                 |
+|---------------------+----------+---------------------------------------------|
+| maybe-insert-subdir | I        | Insert selected subdir into same dired buff |
+|                     |          |                                             |
+
+** Dired open
+
+Allows us to open certain files in different programs (other than Emacs)
+
+#+begin_src emacs-lisp
+(use-package dired-open
+  :commands (dired dired-jump)
+  :config
+  (setq dired-open-extensions '(("png" . "feh")
+                                ("mkv" . "mpv"))))
 #+end_src
 
 * Runtime performance
