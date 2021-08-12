@@ -16,6 +16,15 @@
 (require 'use-package);;ukljucujemo paket
 (setq use-package-always-ensure t);;osigurava da paketi koji su neophodni i koji se koriste u datoj emacs konfiguraciji budu preuzeti prilikom pokretanja emacs-a, ukoliko nisu, zato nema potrebe da se navodi :ensure t za svaki fajl
 
+(use-package auto-package-update
+  :custom
+  (auto-package-update-interval 7)
+  (auto-package-update-prompt-before-update t)
+  (auto-package-update-hide-results t)
+  :config
+  (auto-package-update-maybe)
+  (auto-package-update-at-time "23:00"))
+
 ;;ukljucuje brojeve redova/kolona za svaki deo koda
   (column-number-mode)
   (global-display-line-numbers-mode t)
