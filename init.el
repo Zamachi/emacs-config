@@ -308,6 +308,22 @@
   :after lsp)
 ;;lsp-ivy-workspace-symbol usage
 
+(use-package dap-mode
+  ;; Uncomment the config below if you want all UI panes to be hidden by default!
+  :custom
+  (lsp-enable-dap-auto-configure nil)
+  :config
+  ;; Set up Node debugging
+  (require 'dap-node)
+  (dap-node-setup);; Automatically installs Node debug adapter if needed
+  (dap-ui-mode 1)
+
+  ;; Bind `C-c l d` to `dap-hydra` for easy access
+  (general-define-key
+    :keymaps 'lsp-mode-map
+    :prefix lsp-keymap-prefix
+    "d" '(dap-hydra t :wk "debugger")))
+
 (use-package typescript-mode
       :mode "\\.ts\\'"
     :hook (typescript-mode . lsp-deferred)

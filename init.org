@@ -513,6 +513,79 @@ Usage of LSP - works only if language is provided:
 [[https://github.com/emacs-lsp/lsp-ui][LSP-UI documentation]]
 
 
+
+*** DAP mode and Debugging
+Dap-mode je paket za debugging putem Debugging Adapter Protocol. Debager za svaki jezik se konfigurise posebno
+[[https://github.com/emacs-lsp/dap-mode][Dokumentacija DAP-mode.]]
+
+
+#+begin_src emacs-lisp
+  (use-package dap-mode
+    ;; Uncomment the config below if you want all UI panes to be hidden by default!
+    :custom
+    (lsp-enable-dap-auto-configure nil)
+    :config
+    ;; Set up Node debugging
+    (require 'dap-node)
+    (dap-node-setup);; Automatically installs Node debug adapter if needed
+    (dap-ui-mode 1)
+  
+    ;; Bind `C-c l d` to `dap-hydra` for easy access
+    (general-define-key
+      :keymaps 'lsp-mode-map
+      :prefix lsp-keymap-prefix
+      "d" '(dap-hydra t :wk "debugger")))
+#+end_src
+
+Ukljucuje se sa *M-x Dap-debug-mode*, a onda ce pitati da se selektuje konfiguracioni templejt. LSP-mode mora biti aktivan u bufferu. Konfiguracije se moze menjati sa *M-x dap-debug-recent.*  Editovanje konfiguracija se vrsi sa *M-x dap-debug-edit-templates.*
+Konfiguracioni templejti se najcesce cuvaju u posebnom fajlu, unutar korenog direktorijuma projekta npr.,  tipa *debug.el* gde se nalepi templejt sledeceg izgleda:
+
+(dap-register-debug-template
+"ime-templejta"
+(list :type "tip-debuggera"(npr node)
+        :cwd nil <- podesava trenutni radni direktorijum
+        :request "launch"
+        :program nil <- koji program ce se pokrenuti
+        :name "opet-ime")), koristi se konfiguracija sa *VSCodea* 
+
+Templejt treba evaluirati (*C-x C-e*) pre nego sto postane dostupan.
+
+[[https://emacs-lsp.github.io/dap-mode/page/configuration/#dap-mode-configuration][Konfiguracija DAP mode-a.]]
+        
+**** Breakpoints
+
+Breakpoint se dodaje sa *M-x dap-breakpoint-toggle* naredbom.
+Da se otvori prikaz sa Breakpointima, pokrece se komanda *M-x dap-ui-breakpoints* i kada se zavrsi, moze se izaci pritiskom na taster q
+*M-x dap-breakpoint-log-message* dodaje custom poruku koja se ispisuje kada debugger dodje na breakpoint. Sa *{ promenljiva iz koda }* mozemo evaluirati neki izraz.
+Moze se dodati breakpoint i sa uslovom: *M-x dap-breakpoint-condition*. Uslov se pise u jeziku koji se debaguje (?)
+
+Takodje mozemo dodati *watch expressions* - odnosno promenljive cije vrednosti zelimo da se ispisuju u panelu "Expressions", jednostavno pozovemo naredbu *M-x dap-ui-expressions-add ime-promenljive* i ta promenljiva iz koda ce se ispisivati u pogledu.
+Uklanja se sa *M-x dap-ui-expressions-remove*.
+
+Da se prikazu lokalne varijable, koristi se funkcija *M-x dap-ui-locals*. 
+
+**** Navigacija
+
+Sa *M-x dap-next* se prelazi na sledecu liniju u kodu. 
+
+Promena funkcije na stacku se vrsi sa *dap-switch-stack-frame*
+
+**** Sesije
+
+Sesija se resetuje sa *M-x dap-debug-restart*.
+Debugger se gasi sa *M-x dap-disconnect*
+Prikaz svih sesija za debagovanje *M-x dap-ui-sessions* , ako se onda prebacimo na taj view i pretisnemo *D(u Emacs mode-u - C-z)* onda se obrise sesija.
+
+Paleta komandi: *M-x dap-hydra*
+
+**** REPL
+
+	Aktivira se sa *M-x dap-ui-repl* ukoliko dap adapter za dati jezik podrzava interaktivnu konzolu. U sustini interaktivna konzola nam dozvoljava da tokom izvrsavanja menjamo kod - mogu se cak i vrednosti menjati dinamicki
+        
+****  VSCode debug config
+
+		VSCode cuva konfiguracije debuggera u *.vscode folderu( debug.json )* i to se moze iskoristiti i u Emacsu, jer je isti debugger adapter i debug protokol!
+
 *** TypeScript
 #+begin_src emacs-lisp
   (use-package typescript-mode
@@ -536,6 +609,11 @@ Usage of LSP - works only if language is provided:
 #+begin_src emacs-lisp
   (use-package love-minor-mode)
 #+end_src
+
+
+*** Python
+
+Kombinujemo Dap-mode i Lsp-mode za Python dev.
 
 ** Company mode
 
