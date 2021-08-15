@@ -114,8 +114,8 @@ This is a font configuration.
 Use Hydra to scale the text as needed.
 WARNING: If fonts are not installed on your system, you have to install them manually.
 #+begin_src emacs-lisp
-  (set-face-attribute 'default nil :font "Fira Code Retina" :height 100)
-  (set-face-attribute 'fixed-pitch nil :font "Fira Code Retina" :height 100)
+  (set-face-attribute 'default nil :font "Fira Code Retina" :height 120)
+  (set-face-attribute 'fixed-pitch nil :font "Fira Code Retina" :height 120)
   (set-face-attribute 'variable-pitch nil :font "Cantarell" :height 120 :weight 'regular)
 #+end_src
 
@@ -264,49 +264,57 @@ Swiper je alternativa za ugradjeni isearch koji dobro radi sa Ivyjem
 Counsel pruzi ekvivalente za Emacs komande(sa nekim dodatnim opcijama) (counsel-mode)
 
 #+begin_src emacs-lisp
-  ;;koristi ivy package, koji ima bolji autocomplete za meta- funkcional.(medju ostalim funkc.)
-
-  (use-package ivy
-    :diminish
-    :bind (("C-s" . swiper)
-           :map ivy-minibuffer-map
-           ("TAB" . ivy-alt-done)
-           ("C-f" . ivy-alt-done)
-           ("C-l" . ivy-alt-done)
-           ("C-j" . ivy-next-line)
-           ("C-k" . ivy-previous-line)
-           :map ivy-switch-buffer-map
-           ("C-k" . ivy-previous-line)
-           ("C-l" . ivy-done)
-           ("C-d" . ivy-switch-buffer-kill)
-           :map ivy-reverse-i-search-map
-           ("C-k" . ivy-previous-line)
-           ("C-d" . ivy-reverse-i-search-kill))
-    :config
-    (ivy-mode 1))
-  ;;obogacuje ivy packet sa opisom funkcionalnosti i keybindovima(ako ih imaju)
-  (use-package ivy-rich
-    :after ivy
-    :init
-    (ivy-rich-mode 1))
-
-  ;;counsel paket, koji koristi ivy rich, da dodatno obogati meta-pretrage, C-x C-f i dr.
-  (use-package counsel
-    :bind (("M-x" . counsel-M-x)
-           ("C-x b" . counsel-ibuffer)
-           ("C-x C-f" . counsel-find-file)
-           :map minibuffer-local-map
-           ("C-r" . 'counsel-minibuffer-history)))
+        ;;koristi ivy package, koji ima bolji autocomplete za meta- funkcional.(medju ostalim funkc.)
+      
+        (use-package ivy
+          :diminish
+          :bind (("C-s" . swiper)
+                 :map ivy-minibuffer-map
+                 ("TAB" . ivy-alt-done)
+                 ("C-f" . ivy-alt-done)
+                 ("C-l" . ivy-alt-done)
+                 ("C-j" . ivy-next-line)
+                 ("C-k" . ivy-previous-line)
+                 :map ivy-switch-buffer-map
+                 ("C-k" . ivy-previous-line)
+                 ("C-l" . ivy-done)
+                 ("C-d" . ivy-switch-buffer-kill)
+                 :map ivy-reverse-i-search-map
+                 ("C-k" . ivy-previous-line)
+                 ("C-d" . ivy-reverse-i-search-kill))
+          :config
+          (ivy-mode 1))
+        ;;obogacuje ivy packet sa opisom funkcionalnosti i keybindovima(ako ih imaju)
+        (use-package ivy-rich
+          :after ivy
+          :init
+          (ivy-rich-mode 1))
+      
+        ;;counsel paket, koji koristi ivy rich, da dodatno obogati meta-pretrage, C-x C-f i dr.
+        (use-package counsel
+          :bind (("M-x" . counsel-M-x)
+                 ("C-x b" . counsel-ibuffer)
+                 ("C-x C-f" . counsel-find-file)
+                 :map minibuffer-local-map
+                 ("C-r" . 'counsel-minibuffer-history))
+          :config
+          (counsel-mode 1))
 #+end_src
 
 Kako se koristi
 
-| funkcija       | precica | opis                                   |
-|----------------+---------+----------------------------------------|
-| Swiper         | C-s     | Trazi string po regexu za dati buffer  |
-| Find file      | C-x C-f | Pronadji fajl                          |
-| Counsel buffer | C-x b   | Bira se na koji buffer ce se prebaciti |
-|                |         |                                        |
+| funkcija          | precica | opis                                             |
+|-------------------+---------+--------------------------------------------------|
+| Swiper            | C-s     | Trazi string po regexu za dati buffer            |
+| Find file         | C-x C-f | Pronadji fajl                                    |
+| Counsel buffer    | C-x b   | Bira se na koji buffer ce se prebaciti           |
+|                   | Alt-o   | U Counsel-M-x meniju otvara nove funkcionalnosti |
+|                   | Alt-o h | Otvara help za selektovanu komandu iz Counsela   |
+| Describe function | C-h C-f | Opisuje funkciju                                 |
+| Describe variable | C-h v   | Opisuje promenljivu                              |
+|                   |         |                                                  |
+
+Ako se u M-x u ne vidi opis funkcionalnosti, uraditi reset ivy-rich-mode-a 
 
 ** Helpful
 
@@ -424,10 +432,13 @@ Primer koriscenja: zamislimo da imamo C-c j i C-c k bindovano u konfiguraciji, i
 #+end_src
 ** Structure templates
 #+begin_src emacs-lisp
-(with-eval-after-load 'org
-  (require 'org-tempo)
-
-  (add-to-list 'org-structure-template-alist '("el" . "src emacs-lisp")))
+    (with-eval-after-load 'org
+      (require 'org-tempo)
+    
+      (add-to-list 'org-structure-template-alist '("el" . "src emacs-lisp"))
+       (add-to-list 'org-structure-template-alist '("lua" . "src lua"))
+ 
+      )
 #+end_src
 
 ** Auto-tangle configuration files
@@ -523,7 +534,7 @@ Usage of LSP - works only if language is provided:
 **** Love minor mode
 
 #+begin_src emacs-lisp
-  ;;(use-package love-minor-mode)
+  (use-package love-minor-mode)
 #+end_src
 
 ** Company mode
@@ -663,6 +674,23 @@ The first time you call the devdocs-lookup will show a list of docs to search ( 
 #+end_src
 
 * Terminals
+
+** PowerShell
+
+This should integrate PowerShell on Windows with Emacs
+
+#+begin_src emacs-lisp
+  (if (eq system-type 'windows-nt )
+      (use-package powershell
+        :config
+        ;; Change default compile command for powershell
+        (add-hook 'powershell-mode-hook
+                  (lambda ()
+                    (set (make-local-variable 'compile-command)
+                         (format "powershell.exe -NoLogo -NonInteractive -Command \"& '%s'\"" )))))) 
+#+end_src
+
+Run command M-x powershell to run it
 
 ** vterm
 

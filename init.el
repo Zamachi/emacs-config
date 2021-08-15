@@ -67,8 +67,8 @@
      '(tool-bar-mode nil)
      '(tooltip-mode nil))
 
-(set-face-attribute 'default nil :font "Fira Code Retina" :height 100)
-(set-face-attribute 'fixed-pitch nil :font "Fira Code Retina" :height 100)
+(set-face-attribute 'default nil :font "Fira Code Retina" :height 120)
+(set-face-attribute 'fixed-pitch nil :font "Fira Code Retina" :height 120)
 (set-face-attribute 'variable-pitch nil :font "Cantarell" :height 120 :weight 'regular)
 
 (use-package general
@@ -173,7 +173,9 @@
          ("C-x b" . counsel-ibuffer)
          ("C-x C-f" . counsel-find-file)
          :map minibuffer-local-map
-         ("C-r" . 'counsel-minibuffer-history)))
+         ("C-r" . 'counsel-minibuffer-history))
+  :config
+  (counsel-mode 1))
 
 (use-package helpful
   :commands (helpful-callable helpful-variable helpful-command helpful-key)
@@ -264,7 +266,10 @@
 (with-eval-after-load 'org
   (require 'org-tempo)
 
-  (add-to-list 'org-structure-template-alist '("el" . "src emacs-lisp")))
+  (add-to-list 'org-structure-template-alist '("el" . "src emacs-lisp"))
+   (add-to-list 'org-structure-template-alist '("lua" . "src lua"))
+
+  )
 
 (defun efs/org-babel-tangle-config ()
   (when (string-equal (buffer-file-name)
@@ -314,7 +319,7 @@
   :hook (lua-mode . lsp-deferred)
 )
 
-;;(use-package love-minor-mode)
+(use-package love-minor-mode)
 
 (use-package company
     :after lsp-mode
@@ -360,6 +365,15 @@
 
 ;;(add-hook 'python-mode-hook
 ;;          (lambda () (setq-local devdocs-current-docs '("python~3.9"))))
+
+(if (eq system-type 'windows-nt )
+    (use-package powershell
+      :config
+      ;; Change default compile command for powershell
+      (add-hook 'powershell-mode-hook
+                (lambda ()
+                  (set (make-local-variable 'compile-command)
+                       (format "powershell.exe -NoLogo -NonInteractive -Command \"& '%s'\"" ))))))
 
 (if (eq system-type 'gnu/linux)
     (use-package vterm
