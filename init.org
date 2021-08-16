@@ -530,7 +530,7 @@ Dap-mode je paket za debugging putem Debugging Adapter Protocol. Debager za svak
     (dap-node-setup);; Automatically installs Node debug adapter if needed
     (dap-ui-mode 1)
   
-    ;; Bind `C-c l d` to `dap-hydra` for easy access
+    ;; Sa "C-c l d" otvori se dap-hydra prozor za lakse debagovanje
     (general-define-key
       :keymaps 'lsp-mode-map
       :prefix lsp-keymap-prefix
@@ -614,6 +614,14 @@ Paleta komandi: *M-x dap-hydra*
 *** Python
 
 Kombinujemo Dap-mode i Lsp-mode za Python dev.
+
+***  C++
+
+#+begin_src emacs-lisp
+  (require 'dap-cpptools)
+  (add-hook 'c++-mode-hook 'lsp)
+#+end_src
+
 
 ** Company mode
 

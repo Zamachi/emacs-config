@@ -318,7 +318,7 @@
   (dap-node-setup);; Automatically installs Node debug adapter if needed
   (dap-ui-mode 1)
 
-  ;; Bind `C-c l d` to `dap-hydra` for easy access
+  ;; Sa "C-c l d" otvori se dap-hydra prozor za lakse debagovanje
   (general-define-key
     :keymaps 'lsp-mode-map
     :prefix lsp-keymap-prefix
@@ -336,6 +336,9 @@
 )
 
 (use-package love-minor-mode)
+
+(require 'dap-cpptools)
+(add-hook 'c++-mode-hook 'lsp)
 
 (use-package company
     :after lsp-mode
