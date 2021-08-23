@@ -1,0 +1,863 @@
+#+title My emacs configuration
+# #+PROPERTY: header-args:emacs-lisp :tangle ~/.doom.d/config.el :mkdirp yes
+
+* Set user data
+
+Place your private configuration here! Remember, you do not need to run 'doom
+sync' after modifying this file!
+
+Some functionality uses this to identify you, e.g. GPG configuration, email
+clients, file templates and snippets.
+
+#+begin_src emacs-lisp
+;;; $DOOMDIR/config.el -*- lexical-binding: t; -*-
+(setq user-full-name "Zamachi"
+      user-mail-address "dstefa.dimitrijevic7@gmail.com")
+#+end_src
+
+* Basic UI Config
+
+** Font config
+
+Doom exposes five (optional) variables for controlling fonts in Doom. Here
+are the three important ones:
+
+ + `doom-font'
+ + `doom-variable-pitch-font'
+ + `doom-big-font' -- used for `doom-big-font-mode' use this for
+   presentations or streaming.
+
+They all accept either a font-spec, font string ("Input Mono-12"), or xlfd
+font string. You generally only need these two:
+ - (setq doom-font (font-spec :family "monospace" :size 12 :weight 'semi-light)
+        doom-variable-pitch-font (font-spec :family "sans" :size 13))
+
+#+begin_src emacs-lisp
+
+;;fontovi
+(setq  doom-font(font-spec :family "Fira Code" :height 220)
+       doom-variable-pitch-font(font-spec :family "Cantarell" :height 130))
+#+end_src
+
+** Color theme configuration
+
+ There are two ways to load a theme. Both assume the theme is installed and
+ available. You can either set `doom-theme' or manually load a theme with the
+ `load-theme' function.
+#+begin_src emacs-lisp
+;;doom theme
+(use-package! doom-themes
+  :config
+  ;; Global settings (defaults)
+  (setq doom-themes-enable-bold t    ; if nil, bold is universally disabled
+        doom-themes-enable-italic t) ; if nil, italics is universally disabled
+  (load-theme 'doom-outrun-electric t)
+
+  ;; Enable flashing mode-line on errors
+  (doom-themes-visual-bell-config)
+  ;; Enable custom neotree theme (all-the-icons must be installed!)
+  (doom-themes-neotree-config)
+  ;; or for treemacs users
+  (setq doom-themes-treemacs-theme "doom-atom") ; use "doom-colors" for less minimal icon theme
+  (doom-themes-treemacs-config)
+  ;; Corrects (and improves) org-mode's native fontification.
+  (doom-themes-org-config))
+#+end_src
+
+** Number line mode
+This determines the style of line numbers in effect. If set to `nil', line
+numbers are disabled. For relative line numbers, set this to `relative'.
+
+#+begin_src emacs-lisp
+(setq display-line-numbers-type t)
+(dolist (mode '(org-mode-hook
+                term-mode-hook
+                shell-mode-hook
+                treemacs-mode
+                eshell-mode-hook))
+  (add-hook mode (lambda () (display-line-numbers-mode 0))))
+#+end_src
+
+* Keybinding configurations
+** General
+
+KORISTI SE DA SETUJE KEYBINDINGE U GLOBALU I ZA SPECIFICAN MODE(major & minor (?) )
+keymaps specificira za koji mode(ili modove) vaze pravila. Mode se definise kao:
+IME-MODA-map (npr. clojure-mode-map)
+prefixi specificiraju kako se ulazi u definer, zatim se iz samog definera izvlace bindovi, global-prefix radi bez obzira gde se nalazili (I think?)
+
+#+begin_src emacs-lisp
+(use-package! general
+  :config
+  (general-create-definer zama/leader-keys
+    :keymaps '(normal visual emacs)
+    :global-prefix "SPC z")
+
+  (zama/leader-keys
+    "t"  '(:ignore t :which-key "toggles")
+    "tt" '(counsel-load-theme :which-key "choose theme")))
+
+#+end_src
+
+[[https://github.com/noctuid/general.el][General dokumentacija]]
+
+** Evil
+
+Vim emulation sloj za emacs
+Shift-V ulazi u visual(line) mode
+Ctr-G(escape) ulazi u normal mode)
+slovo i sluzi za insert
+"dd" u normal modu brise liniju
+"u" u normal modu radi undo (samo brisanja ?)
+Ctrl-Z switchuje izmedju normal mode(Vim/evil) i "emacs" mode
+
+[[https://github.com/emacs-evil/evil][Evil dokumentacija
+]]
+| Evil normal mode |                                    |
+| Skracenica       | Opis                               |
+| C-v              | duplira liniju                     |
+| u                | undo                               |
+| C-z              | switch na Emacs mode               |
+| i                | Switch na insert mode              |
+| Shift-V          | Visual line mode                   |
+| dd               | brise liniju                       |
+| d                | Brise selektovani sadrzaj i kopira |
+| y                | Yank(copy) selektovanog            |
+| P                | Nalepi sadrzaj PRE kursora         |
+| p                | Nalepi sadrzaj NAKON kursora       |
+| C-w              | Window manager (?)                 |
+| j                | Next visual line                   |
+| k                | Previous Visual line               |
+| C-a              | Beginning of the line              |
+| C-e              | End of the line                    |
+
+| Evil insert mode |                  |
+| Skracenica       | opis             |
+| C-g/escape       | Switch na normal |
+| Shift-insert     | Paste            |
+
+| Evil visual line mode |                                  |
+| Skracenica            | opis                             |
+|-----------------------+----------------------------------|
+| g c                   | zakomentarise selektovane linije |
+** Evil collections
+
+Dodatni keybindinzi koje sam Evil ne pokriva po difoltu
+
+[[https://github.com/emacs-evil/evil-collection][Evil collection dokumentacija]]
+* UI Configuration
+** Better Modeline
+
+Instalirati fontove ako se ne vide! *M-x install all font icons*
+
+** Solaire mode
+#+begin_src emacs-lisp
+(use-package! solaire-mode)
+(add-to-list 'solaire-mode-themes-to-face-swap 'doom-outrun-electric)
+(solaire-global-mode 1)
+#+end_src
+** Which key
+#+begin_src emacs-lisp
+(use-package! which-key
+  :init (which-key-mode)
+  :diminish which-key-mode
+  :config
+  (setq which-key-idle-delay 0))
+#+end_src
+** Ivy and Counsel
+
+[[https://oremacs.com/swiper/][Ivy]]je genericki completion alat ( koristi ivy-mode ).
+Swiper je alternativa za ugradjeni isearch koji dobro radi sa Ivyjem
+Counsel pruzi ekvivalente za Emacs komande(sa nekim dodatnim opcijama) (counsel-mode)
+
+#+begin_src emacs-lisp
+        ;;koristi ivy package, koji ima bolji autocomplete za meta- funkcional.(medju ostalim funkc.)
+
+        ;; (use-package! ivy
+        ;;   :diminish
+        ;;   :bind (("C-s" . swiper)
+        ;;          :map ivy-minibuffer-map
+        ;;          ("TAB" . ivy-alt-done)
+        ;;          ("C-f" . ivy-alt-done)
+        ;;          ("C-l" . ivy-alt-done)
+        ;;          ("C-j" . ivy-next-line)
+        ;;          ("C-k" . ivy-previous-line)
+        ;;          :map ivy-switch-buffer-map
+        ;;          ("C-k" . ivy-previous-line)
+        ;;          ("C-l" . ivy-done)
+        ;;          ("C-d" . ivy-switch-buffer-kill)
+        ;;          :map ivy-reverse-i-search-map
+        ;;          ("C-k" . ivy-previous-line)
+        ;;          ("C-d" . ivy-reverse-i-search-kill))
+        ;;   :config
+        ;;   (ivy-mode 1))
+        ;;obogacuje ivy packet sa opisom funkcionalnosti i keybindovima(ako ih imaju)
+        ;; (use-package! ivy-rich
+        ;;   :after ivy
+        ;;   :init
+        ;;   (ivy-rich-mode 1))
+
+;;         counsel paket, koji koristi ivy rich, da dodatno obogati meta-pretrage, C-x C-f i dr.
+        (use-package! counsel
+          :after ivy-rich
+          :config
+          (counsel-mode 1))
+#+end_src
+
+Kako se koristi
+
+| funkcija          | precica | opis                                       |
+|-------------------+---------+--------------------------------------------|
+| Swiper            | SPC s b | Trazi string po regexu za dati buffer      |
+| Find file         | SPC .   | Pronadji fajl                              |
+| Counsel buffer    | SPC b B | Bira se na koji buffer ce se prebaciti     |
+| Describe function | SPC h f | Opisuje funkciju                           |
+| Describe variable | SPC h v | Opisuje promenljivu                        |
+| Describe face     | SPC h F | Opisuje face atribut fontova               |
+| Describe key      | SPC h k | Opisuje uneti keybind(ukoliko je bindovan) |
+| Describe mode     | SPC h m | Opisuje trenutni (major?) mode             |
+|                   |         |                                            |
+
+Ako se u M-x u ne vidi opis funkcionalnosti, uraditi reset ivy-rich-mode-a
+
+** Helpful
+
+koristi counsel funkcionalnosti i helpful funkcionalnosti da overriduje defaultna ponasanja emacs-a npr. za describe-function ili bilo koje druge describe- funkcionalnosti
+
+#+begin_src emacs-lisp
+  (use-package! helpful
+    :commands (helpful-callable helpful-variable helpful-command helpful-key)
+    :custom
+    (counsel-describe-function-function #'helpful-callable)
+    (counsel-describe-variable-function #'helpful-variable)
+    :bind
+    ([remap describe-function] . counsel-describe-function)
+    ([remap describe-command] . helpful-command)
+    ([remap describe-variable] . counsel-describe-variable)
+    ([remap describe-key] . helpful-key))
+#+end_src
+
+** Text scaling
+*** Hydra
+Hydra se koristi kod buffer cycling-a, ali i za skaliranje teksta
+
+Primer koriscenja: zamislimo da imamo C-c j i C-c k bindovano u konfiguraciji, i zelimo te dve komande da pozivamo u nekoj proizvoljnoj sekvenci, npr. C-c jjkkjkjkj, ovo nam dozvoljava Hydra paket, da ne pretiskamo C-c svaki put, vec samo jednom i da u sekvenci mozemo da zadajemo jjkkkjj naredbe, sto smo ovde iskoristili za povecavanje teksta.
+
+#+begin_src emacs-lisp
+  (use-package! hydra
+    :defer t)
+
+  (defhydra hydra-text-scale (:timeout 4)
+    "scale text"
+    ("j" text-scale-increase "in")
+    ("k" text-scale-decrease "out")
+    ("f" nil "finished" :exit t))
+
+  (zama/leader-keys
+    "ts" '(hydra-text-scale/body :which-key "scale text"))
+#+end_src
+
+* Org mode
+** Better font faces
+#+begin_src emacs-lisp
+(defun efs/org-font-setup ()
+  ;; Replace list hyphen with dot
+  (font-lock-add-keywords 'org-mode
+                          '(("^ *\\([-]\\) "
+                             (0 (prog1 () (compose-region (match-beginning 1) (match-end 1) "•"))))))
+
+  ;; Set faces for heading levels
+  (dolist (face '((org-level-1 . 1.2)
+                  (org-level-2 . 1.1)
+                  (org-level-3 . 1.05)
+                  (org-level-4 . 1.0)
+                  (org-level-5 . 1.1)
+                  (org-level-6 . 1.1)
+                  (org-level-7 . 1.1)
+                  (org-level-8 . 1.1)))
+    (set-face-attribute (car face) nil :font "Cantarell" :weight 'regular :height (cdr face)))
+
+  ;; Ensure that anything that should be fixed-pitch in Org files appears that way
+  (set-face-attribute 'org-block nil :foreground nil :inherit 'fixed-pitch)
+  (set-face-attribute 'org-code nil   :inherit '(shadow fixed-pitch))
+  (set-face-attribute 'org-table nil   :inherit '(shadow fixed-pitch))
+  (set-face-attribute 'org-verbatim nil :inherit '(shadow fixed-pitch))
+  (set-face-attribute 'org-special-keyword nil :inherit '(font-lock-comment-face fixed-pitch))
+  (set-face-attribute 'org-meta-line nil :inherit '(font-lock-comment-face fixed-pitch))
+  (set-face-attribute 'org-checkbox nil :inherit 'fixed-pitch))
+#+end_src
+** Basic org mode conf
+#+begin_src emacs-lisp
+  (defun efs/org-mode-setup ()
+    (org-indent-mode)
+    (variable-pitch-mode 1)
+    (auto-fill-mode 0)
+    (visual-line-mode 1)
+    (setq evil-auto-indent nil))
+
+  (use-package! org
+    :commands (org-capture)
+    :hook (org-mode . efs/org-mode-setup)
+    :config
+    (setq org-ellipsis " ▼"
+          org-hide-emphasis-markers t)
+    (efs/org-font-setup))
+#+end_src
+** Nicer bullets for headings
+#+begin_src emacs-lisp
+(use-package! org-bullets
+  :after org
+  :hook (org-mode . org-bullets-mode)
+  :custom
+  (org-bullets-bullet-list '("◉" "○" "●" "○" "●" "○" "●")))
+
+#+end_src
+** Center org buffers
+#+begin_src emacs-lisp
+(defun efs/org-mode-visual-fill ()
+  (setq visual-fill-column-width 100
+        visual-fill-column-center-text t)
+  (visual-fill-column-mode 1))
+
+(use-package! visual-fill-column
+  :hook (org-mode . efs/org-mode-visual-fill))
+#+end_src
+** Configure babel languages
+
+#+begin_src emacs-lisp
+(with-eval-after-load 'org
+  (push '("conf-unix" . conf-unix) org-src-lang-modes))
+
+#+end_src
+** Structure templates
+#+begin_src emacs-lisp
+    (with-eval-after-load 'org
+      (require 'org-tempo)
+
+      (add-to-list 'org-structure-template-alist '("el" . "src emacs-lisp"))
+      (add-to-list 'org-structure-template-alist '("py" . "src python"))
+      (add-to-list 'org-structure-template-alist '("lua" . "src lua"))
+
+      )
+#+end_src
+
+** Auto-tangle configuration files
+
+Basically automatically tangles this config file(saves it to another file), but just the codeblocks
+#+begin_src emacs-lisp
+  ;; (defun efs/org-babel-tangle-config ()
+  ;;   (when (string-equal (buffer-file-name)
+  ;;                       (expand-file-name "~/.doom.d/config.org"))
+  ;;     ;; Dynamic scoping to the rescue
+  ;;     (let ((org-confirm-babel-evaluate nil))
+  ;;       (org-babel-tangle))))
+
+  ;; (add-hook 'org-mode-hook (lambda () (add-hook 'after-save-hook #'efs/org-babel-tangle-config)))
+#+end_src
+
+No
+
+* Development
+** Commenting
+
+Koristi se Evil nerd commenter, u Visual Line Mode(Shift-V) selektovati linije i pritisnuti *g c*
+
+** Languages
+*** Language Servers
+
+LSP je Language Server Protocol koji se koristi da dostavi informaciju o autocompletion-u i slicnim stvarima vezanim za sintaksu jezika.
+
+#+begin_src emacs-lisp
+    (defun efs/lsp-mode-setup ()
+      (setq lsp-headerline-breadcrumb-segments '(path-up-to-project file symbols))
+      (lsp-headerline-breadcrumb-mode))
+
+    (use-package! lsp-mode
+      :commands(lsp lsp-deferred)
+      :hook(lsp-mode . efs/lsp-mode-setup)
+      :config
+      (lsp-enable-which-key-integration t))
+
+    (use-package! lsp-ui
+      :hook(lsp-mode . lsp-ui-mode)
+      :custom
+      (lsp-ui-doc-position 'bottom))
+
+    (use-package! lsp-treemacs
+      :after lsp);;lsp-treemacs menu
+    ;;we can also enable the sideline via lsp-ui-sideline-enable and lsp-ui-sideline-show-hover
+
+    (use-package! lsp-ivy
+      :after lsp)
+    ;;lsp-ivy-workspace-symbol usage
+#+end_src
+
+Usage of LSP - works only if language is provided:
+
+| command                      | shortcut    | description                                       |
+|------------------------------+-------------+---------------------------------------------------|
+| Find references              | C-c l g r   | Pronalazi sve reference selektovanog simbola radi |
+| Find definitions             | C-c l g g   | Isto kao iznad, samo pronalazi  definicije        |
+| Rename                       | C-c l r r   | Preimenuje selektovan simbol                      |
+| Flymake diagnostics buffer   |             | Dijagnostika gresaka u datom fajlu - greske, warn |
+| Code formatting              | C-c l = =   | Reformatira kod kako ih language serv. formatira  |
+| lsp-treemacs-symbols         | M-x command | Show a tree view of symbols in the file           |
+| lsp-treemacs-references      | M-x command | Show a tree view for refs of symbol under cursor  |
+| lsp-treemacs-error-list      | M-x command | Show a tree veiw for diagnostic msgs              |
+| lsp-ivy-workspace-symb       | M-x command | Search for a symbol name in the current project   |
+| lsp-ivy-global-workspace-sym | M-x command | Searches in all active project workspaces         |
+|                              |             |                                                  |
+**** Documentation
+
+[[https://github.com/emacs-lsp/lsp-ui][LSP-UI documentation]]
+
+
+
+*** DAP mode and Debugging
+Dap-mode je paket za debugging putem Debugging Adapter Protocol. Debager za svaki jezik se konfigurise posebno
+[[https://github.com/emacs-lsp/dap-mode][Dokumentacija DAP-mode.]]
+
+
+#+begin_src emacs-lisp
+  (use-package! dap-mode
+    ;; Uncomment the config below if you want all UI panes to be hidden by default!
+    :custom
+    (lsp-enable-dap-auto-configure nil)
+    :config
+    ;; Set up Node debugging
+    (require 'dap-node)
+    ;; (dap-node-setup);; Automatically installs Node debug adapter if needed
+    (dap-ui-mode 1)
+
+    ;; Sa "C-c l d" otvori se dap-hydra prozor za lakse debagovanje
+    ;; (general-define-key
+    ;;   :keymaps 'lsp-mode-map
+    ;;   :prefix lsp-keymap-prefix
+    ;;   "d" '(dap-hydra t :wk "debugger"))
+    )
+#+end_src
+
+Ukljucuje se sa *M-x Dap-debug-mode*, a onda ce pitati da se selektuje konfiguracioni templejt. LSP-mode mora biti aktivan u bufferu. Konfiguracije se moze menjati sa *M-x dap-debug-recent.*  Editovanje konfiguracija se vrsi sa *M-x dap-debug-edit-templates.*
+Konfiguracioni templejti se najcesce cuvaju u posebnom fajlu, unutar korenog direktorijuma projekta npr.,  tipa *debug.el* gde se nalepi templejt sledeceg izgleda:
+
+(dap-register-debug-template
+"ime-templejta"
+(list :type "tip-debuggera"(npr node)
+        :cwd nil <- podesava trenutni radni direktorijum
+        :request "launch"
+        :program nil <- koji program ce se pokrenuti
+        :name "opet-ime")), koristi se konfiguracija sa *VSCodea*
+
+Templejt treba evaluirati (*C-x C-e*) pre nego sto postane dostupan.
+
+[[https://emacs-lsp.github.io/dap-mode/page/configuration/#dap-mode-configuration][Konfiguracija DAP mode-a.]]
+
+**** Breakpoints
+
+Breakpoint se dodaje sa *M-x dap-breakpoint-toggle* naredbom.
+Da se otvori prikaz sa Breakpointima, pokrece se komanda *M-x dap-ui-breakpoints* i kada se zavrsi, moze se izaci pritiskom na taster q
+*M-x dap-breakpoint-log-message* dodaje custom poruku koja se ispisuje kada debugger dodje na breakpoint. Sa *{ promenljiva iz koda }* mozemo evaluirati neki izraz.
+Moze se dodati breakpoint i sa uslovom: *M-x dap-breakpoint-condition*. Uslov se pise u jeziku koji se debaguje (?)
+
+Takodje mozemo dodati *watch expressions* - odnosno promenljive cije vrednosti zelimo da se ispisuju u panelu "Expressions", jednostavno pozovemo naredbu *M-x dap-ui-expressions-add ime-promenljive* i ta promenljiva iz koda ce se ispisivati u pogledu.
+Uklanja se sa *M-x dap-ui-expressions-remove*.
+
+Da se prikazu lokalne varijable, koristi se funkcija *M-x dap-ui-locals*.
+
+**** Navigacija
+
+Sa *M-x dap-next* se prelazi na sledecu liniju u kodu.
+
+Promena funkcije na stacku se vrsi sa *dap-switch-stack-frame*
+
+**** Sesije
+
+Sesija se resetuje sa *M-x dap-debug-restart*.
+Debugger se gasi sa *M-x dap-disconnect*
+Prikaz svih sesija za debagovanje *M-x dap-ui-sessions* , ako se onda prebacimo na taj view i pretisnemo *D(u Emacs mode-u - C-z)* onda se obrise sesija.
+
+Paleta komandi: *M-x dap-hydra*
+
+**** REPL
+
+	Aktivira se sa *M-x dap-ui-repl* ukoliko dap adapter za dati jezik podrzava interaktivnu konzolu. U sustini interaktivna konzola nam dozvoljava da tokom izvrsavanja menjamo kod - mogu se cak i vrednosti menjati dinamicki
+
+****  VSCode debug config
+
+		VSCode cuva konfiguracije debuggera u *.vscode folderu( debug.json )* i to se moze iskoristiti i u Emacsu, jer je isti debugger adapter i debug protokol!
+
+*** TypeScript
+#+begin_src emacs-lisp
+  ;; (use-package! typescript-mode
+  ;;       :mode "\\.ts\\'"
+  ;;     :hook (typescript-mode . lsp-deferred)
+  ;;   :config
+  ;; (setq typescript-indent-level 2))
+#+end_src
+
+*** Lua
+
+#+begin_src emacs-lisp
+  ;; (use-package! lua-mode
+  ;;   :mode "\\.lua\\'"
+  ;;   :hook (lua-mode . lsp-deferred)
+  ;; )
+#+end_src
+
+**** Love minor mode
+
+#+begin_src emacs-lisp
+  ;; (use-package! love-minor-mode)
+#+end_src
+
+
+*** Python
+
+Kombinujemo Dap-mode i Lsp-mode za Python dev.
+
+#+begin_src emacs-lisp
+;; (use-package! lsp-pyright
+;;   :hook (python-mode . (lambda ()
+;;                          (require 'lsp-pyright)
+;;                          (lsp))))
+#+end_src
+
+***  C++
+
+#+begin_src emacs-lisp
+  (require 'dap-cpptools)
+  (add-hook 'c++-mode-hook 'lsp)
+#+end_src
+
+
+** Company mode
+
+Provides a nicer in-buffer completion interface.
+Company box further enhances the looks and icons and presentation
+
+#+begin_src emacs-lisp
+    (use-package! company
+      :after lsp-mode
+      :hook(lsp-mode . company-mode)
+      ;; :bind (:map company-active-map
+      ;;             ("<tab>" . company-complete-selection))
+      ;; (:map lsp-mode-map
+      ;;       ("<tab>" . company-indent-or-complete-common))
+      :custom
+      (company-minimum-prefix-length 1)
+      (company-idle-delay 0.0))
+
+    (use-package! company-box
+      :hook(company-mode . company-box-mode))
+#+end_src
+
+Hitting TAB is for completion
+
+** Projectile
+
+ Emacs ima koncept DIRECTORY LOCAL VARIABLES - kreira se fajl u repo folderu koji konfigurise emacs varijable, koje ce se primeniti na odredjene fajlove u projektu svaki put kad se otvori bafer koji cita fajl iz datog foldera:
+  	- y - otvara .dir-locals.el unutar (trenutnog ?) repo-a, koji predstavlja taj konfiguracioni fajl u sustini...
+	NAREDBE KOJE SE MOGU KORISTITI:
+		+ projectile-project-run-cmd - koja naredba se izvrsava kada se uradi C-c p-p
+
+ Kada se zavrsi editovanje i sacuva fajl, treba da se uradi evaluate (M-:) sa naredbom: (hack-dir-local-variables) i reloaduje ove promenljive iz dir-locals.el fajla.
+
+#+begin_src emacs-lisp
+  ;;projectile project interaction library for emacs. Offers functionalities for projects
+  (use-package! projectile
+    :diminish projectile-mode
+    :config (projectile-mode)
+    :custom ((projectile-completion-system 'ivy))
+    :init
+    (when (file-directory-p "~/Projects") ;;NOTE: set this path to where you keep git repos
+      (setq projectile-project-search-path '("~/Projects"))) ;;NOTE: same for this
+    (setq projectile-switch-project-action #'projectile-dired))
+
+  ;; (use-package! counsel-projectile
+  ;;   :after projectile
+  ;;   :config (counsel-projectile-mode))
+#+end_src
+
+| funkcija                   | skracenica | opis                                         |
+|----------------------------+------------+----------------------------------------------|
+| projectile-edit-dir-locals | C-c p E    | Otvara .dir-locals.el unutar trenutnog repoa |
+| projectile-project-run-cmd | C-c p-p    | Pokrece se projekat                          |
+| hack-dir-local-variables   |            | Refreshuje .dir-locals.el kada se izmeni     |
+| projectile menu            | C-c p      | Otvara projectile menu                       |
+
+
+| Projectile menu komande   |            |                                                    |
+| Funkcija                  | skracenica | opis                                               |
+| projectile-switch-project | p          | Menja projekat                                     |
+| fuzzy search              | f          | Fuzzy search u projektnom folderu                  |
+| Testing project           | P          | Pokrece testove u datom projektu (?)               |
+| (?)                       | Alt-o      | Prikazuje dodatne funkcionalnosti za dati projekat |
+| counsel-projectile-rg     |            | Grep komanda, samo sto trazi po celom projektu     |
+
+** Basic Magit setup
+#+begin_src emacs-lisp
+  (use-package! magit
+    :commands magit-status
+    :custom
+    (magit-display-buffer-function #'magit-display-buffer-same-window-except-diff-v1))
+
+#+end_src
+
+| Funkcija       | skracenica | opis                                                    |
+|----------------+------------+---------------------------------------------------------|
+| Magit status   | C-x g      | Status verzionnisanja                                   |
+| Staging        | C-x g s    | Staging fajlova                                         |
+| Stage all      | C-x g S    | Staging svih fajlova                                    |
+| Unstaging      | C-x g u    | Unstaging fajla                                         |
+| Unstage all    | C-x g U    | Unstaging svih fajlova                                  |
+| Branches       | C-x g b    | Otvara panel sa branches                                |
+| Create branch  | C-x g b c  | Kreira branshu                                          |
+| (?)            | C-x g b s  | (?)                                                     |
+| Switch branch  | C-x g b b  | Menja tekucu branshu ( ZAHTEVA DA SE STASHUJU PROMENE ) |
+| Commit panel   | C-x g c    | Panel sa commitovanjem                                  |
+| Commit fajla   | C-x g c c  | Komituje fajl (C-c C-k to cancel)                       |
+| Fixup fajla    | C-x g c F  | Fixuje prethodni komit(umesto rebase-ovanja)            |
+| Stash list     | C-x g z    | Otvara stash listu                                      |
+| Stash changes  | C-x g z z  | Stashuje promene                                        |
+| Push panel     | C-x g p    | Otvara push panel                                       |
+| Push to remote | C-x g p p  | pushuje na remote                                       |
+| Fork(?)        | C-x g p u  | Nesto za forkovanje (?)                                 |
+| Push elsewhere | C-x g p e  | Pushuje na neki drugi remote                            |
+| Force push     | C-x g p f  | Forsira push ako failuje sa nekim REFS-ovima            |
+
+** Forge
+#+begin_src emacs-lisp
+  ;; (use-package! forge
+  ;;   :after magit);;pruza informacije o nekom repozitorijumu, zahteva autentifikaciju sa GitHubom da bi se koristila. PROCITATI DOKUMENTACIJU
+#+end_src
+
+[[https://github.com/magit/forge][Documentation page for Forge]]
+
+NOTE: konfigurisi GitHub token pre nego sto koristis Forge!
+
+[[https://magit.vc/manual/forge/Token-Creation.html#Token-Creation][*** Kreacija tokena]]
+[[https://magit.vc/manual/ghub/Getting-Started.html#Getting-Started][*** Getting started]]
+
+
+** Rainbow delimiters
+
+Delimiteri duginih boja kao visual aid tokom razvoja
+#+begin_src emacs-lisp
+(use-package! rainbow-delimiters
+  :hook (prog-mode . rainbow-delimiters-mode))
+#+end_src
+
+** Devdocs - Emacs viewer for DevDocs
+
+It's a "Viewer" for documentation from the [[https://devdocs.io/][DevDocs website.]]
+
+#+begin_src emacs-lisp
+(use-package! devdocs)
+#+end_src
+
+How to use:
+1. Download documentation with M-x devdocs-install, this will query the DevDocs website for available documents and save to disk;
+2. Call M-x devdocs-lookup to search for entries
+
+The first time you call the devdocs-lookup will show a list of docs to search ( you can select more than one via comma-seperated list). Every other call to this function will search in these docs(unless you give a prefix, which lets you select new docs). The current devdocs can be set up via devdocs-current-docs directly, dir-local variables or mode hooks:
+#+begin_src emacs-lisp
+;;(add-hook 'python-mode-hook
+;;          (lambda () (setq-local devdocs-current-docs '("python~3.9"))))
+#+end_src
+
+* Terminals
+
+** PowerShell
+
+This should integrate PowerShell on Windows with Emacs
+
+#+begin_src emacs-lisp
+  (if (eq system-type 'windows-nt )
+      (use-package! powershell
+        :config
+        ;; Change default compile command for powershell
+        (add-hook 'powershell-mode-hook
+                  (lambda ()
+                    (set (make-local-variable 'compile-command)
+                         (format "powershell.exe -NoLogo -NonInteractive -Command \"& '%s'\"" ))))))
+#+end_src
+
+Run command M-x powershell to run it
+
+** vterm
+
+This is the terminal emulator part specifically tailored for Linux OS-es(doesn't work on Windows)
+
+*** vterm
+
+Improved terminal emulator.
+Before installing, make sure you have the following dependencies installed:
+
+| dependency name | version | description                                                   |
+|-----------------+---------+---------------------------------------------------------------|
+| GNU Emacs       | >=25.1  | With module support - check that module-file-suffix isn't nil |
+| cmake           | >=3.11  | For makefiles                                                 |
+| libtool-bin     |         | Related issues: [[https://github.com/akermu/emacs-libvterm/issues/66][#66]] [[https://github.com/akermu/emacs-libvterm/issues/85#issuecomment-491845136][#85]]                                       |
+| libvterm        | >=0.1   | If it throws VTERM_COLOR during compilation, check [[https://github.com/akermu/emacs-libvterm/#frequently-asked-questions-and-problems][FAQ]]        |
+|                 |         |                                                               |
+
+#+begin_src emacs-lisp
+  (if (eq system-type 'gnu/linux)
+      (use-package! vterm
+        :commands vterm
+        :config
+        (setq term-prompt-regexp "^[^#$%\n]*[#$%>] *")
+        ;;(setq vterm-shell "zsh") ;;for custom shell launch
+        (setq vterm-max-scrollback 10000))
+    )
+#+end_src
+
+** Eshell
+
+#+begin_src emacs-lisp
+  (defun efs/configure-eshell ()
+    ;; Save command history when commands are entered
+    (add-hook 'eshell-pre-command-hook 'eshell-save-some-history)
+
+    ;; Truncate buffer for performance
+    (add-to-list 'eshell-output-filter-functions 'eshell-truncate-buffer)
+
+    ;; Bind some useful keys for evil-mode
+    (evil-define-key '(normal insert visual) eshell-mode-map (kbd "C-r") 'counsel-esh-history)
+    (evil-define-key '(normal insert visual) eshell-mode-map (kbd "<home>") 'eshell-bol)
+    (evil-normalize-keymaps)
+
+    (setq eshell-history-size         10000
+          eshell-buffer-maximum-lines 10000
+          eshell-hist-ignoredups t
+          eshell-scroll-to-bottom-on-input t))
+(if (eq system-type 'windows-nt )
+    (use-package! eshell-git-prompt
+      :after eshell)
+
+    (use-package! eshell
+      :hook (eshell-first-time-mode . efs/configure-eshell)
+      :config
+
+    (with-eval-after-load 'esh-opt
+      (setq eshell-destroy-buffer-when-process-dies t)
+      (setq eshell-visual-commands '("htop" "zsh" "vim")))
+
+    (eshell-git-prompt-use-theme 'powerline)))
+#+end_src
+
+*** Useful keybindings:
+| Shortcut            | Description                               |
+|---------------------+-------------------------------------------|
+| C-c C-p / C-c C-n   | Go back or forward in the buffer          |
+| M-p / M-n           | Go back and forward in the input history  |
+| C-c C-u             | Delete the current input string backwards |
+| counsel-esh-history | A searchable history of eshell            |
+
+* Dired
+
+** Dired basics
+#+begin_src emacs-lisp
+  (use-package! dired
+    :commands(dired dired-jump)
+    :custom ((dired-listing-switches "-agho --group-directories-first"))
+    :config
+    (evil-collection-define-key 'normal 'dired-mode-map
+      "h" 'dired-single-up-directory
+      "l" 'dired-single-buffer))
+#+end_src
+
+Navigation
+
+| shortcut              | description                                    |
+|-----------------------+------------------------------------------------|
+| n/j                   | next line                                      |
+| p/k                   | prev. line                                     |
+| j/J                   | jump to file in buffer                         |
+| RET                   | select file/dir                                |
+| "^"                   | go to parent dir                               |
+| S-RET/g O             | open file in the "other" window                |
+| M-RET                 | show file in the other window without focusing |
+| g o (dired-view-file) | open file in "preview mode". Close with q      |
+| g r                   | refresh buffer with "revert-buffer"            |
+
+Marking files
+
+| command                  | shortcut   | description                              |
+|--------------------------+------------+------------------------------------------|
+| Ivy enter input verbatim | Ctrl-Alt-j | completes input without Ivy completion   |
+|                          | m          | Marks a file                             |
+|                          | u          | Unmarks                                  |
+|                          | U          | Unmarks all files in the buffer          |
+|                          | * t / t    | inverts marked files                     |
+|                          | % m        | Mark files using regExp                  |
+|                          | *          | Other auto-mark funcs.                   |
+|                          | k / K      | Kill marked items(not delete, just hide) |
+|                          |            |                                          |
+
+Copying / renaming files
+
+| command                          | description                                            |
+|----------------------------------+--------------------------------------------------------|
+| C                                | copy marked files                                      |
+| U                                | unark all files                                        |
+| R                                | rename marked files                                    |
+| % R                              | rename based on regExp                                 |
+| C-x C-q (dired-toggle-read-only) | Makes all items editable directly. Press ZZ to confirm |
+|                                  |                                                        |
+
+Deleting files
+
+| command                   | description                |
+|---------------------------+----------------------------|
+| D                         | delete marked file         |
+| d                         | mark file for deletion     |
+| x                         | Execute deletion for marks |
+| delete-by-moving-to-trash | Self-describing            |
+|                           |                            |
+
+Creating and extracting archives
+
+| command                    | description                              |
+|----------------------------+------------------------------------------|
+| Z                          | (un)compress a file or folder to .tar.gz |
+| c                          | Compress selection to a specific file    |
+| dired-compress-files-alist | Tied to certain file extensions...       |
+|                            |                                          |
+
+** Dired single
+
+Uses only a single instance of Dired
+
+#+begin_src emacs-lisp
+  (use-package! dired-single
+    :commands (dired dired-jump))
+
+  (use-package! all-the-icons-dired
+    :hook (dired-mode . all-the-icons-dired-mode))
+#+end_src
+
+| command             | shortcut | description                                 |
+|---------------------+----------+---------------------------------------------|
+| maybe-insert-subdir | I        | Insert selected subdir into same dired buff |
+|                     |          |                                             |
+
+** Dired open
+
+Allows us to open certain files in different programs (other than Emacs)
+
+#+begin_src emacs-lisp
+(use-package! dired-open
+  :commands (dired dired-jump)
+  :config
+  (setq dired-open-extensions '(("png" . "feh")
+                                ("mkv" . "mpv"))))
+#+end_src
+
+* Runtime performance
+
+Garbace collection happens more frequently but in less time
+
+#+begin_src emacs-lisp
+;; (setq gc-cons-treshold (* 2 1000 1000))
+#+end_src
