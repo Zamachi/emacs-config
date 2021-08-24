@@ -1,5 +1,4 @@
-#+title My emacs configuration
-# #+PROPERTY: header-args:emacs-lisp :tangle ~/.doom.d/config.el :mkdirp yes
+#+TITLE: My emacs configuration
 
 * Set user data
 
@@ -46,22 +45,7 @@ font string. You generally only need these two:
  `load-theme' function.
 #+begin_src emacs-lisp
 ;;doom theme
-(use-package! doom-themes
-  :config
-  ;; Global settings (defaults)
-  (setq doom-themes-enable-bold t    ; if nil, bold is universally disabled
-        doom-themes-enable-italic t) ; if nil, italics is universally disabled
-  (load-theme 'doom-outrun-electric t)
-
-  ;; Enable flashing mode-line on errors
-  (doom-themes-visual-bell-config)
-  ;; Enable custom neotree theme (all-the-icons must be installed!)
-  (doom-themes-neotree-config)
-  ;; or for treemacs users
-  (setq doom-themes-treemacs-theme "doom-atom") ; use "doom-colors" for less minimal icon theme
-  (doom-themes-treemacs-config)
-  ;; Corrects (and improves) org-mode's native fontification.
-  (doom-themes-org-config))
+(setq doom-theme 'doom-outrun-electric)
 #+end_src
 
 ** Number line mode
@@ -87,20 +71,19 @@ IME-MODA-map (npr. clojure-mode-map)
 prefixi specificiraju kako se ulazi u definer, zatim se iz samog definera izvlace bindovi, global-prefix radi bez obzira gde se nalazili (I think?)
 
 #+begin_src emacs-lisp
-(use-package! general
-  :config
-  (general-create-definer zama/leader-keys
-    :keymaps '(normal visual emacs)
-    :global-prefix "SPC z")
+;; (use-package! general
+;;   :config
+;;   (general-create-definer zama/leader-keys
+;;     :keymaps '(normal visual emacs)
+;;     :global-prefix "SPC z")
 
-  (zama/leader-keys
-    "t"  '(:ignore t :which-key "toggles")
-    "tt" '(counsel-load-theme :which-key "choose theme")))
+;;   (zama/leader-keys
+;;     "t"  '(:ignore t :which-key "toggles")
+;;     "tt" '(counsel-load-theme :which-key "choose theme")))
 
 #+end_src
 
 [[https://github.com/noctuid/general.el][General dokumentacija]]
-
 ** Evil
 
 Vim emulation sloj za emacs
@@ -151,19 +134,13 @@ Dodatni keybindinzi koje sam Evil ne pokriva po difoltu
 Instalirati fontove ako se ne vide! *M-x install all font icons*
 
 ** Solaire mode
-#+begin_src emacs-lisp
-(use-package! solaire-mode)
-(add-to-list 'solaire-mode-themes-to-face-swap 'doom-outrun-electric)
-(solaire-global-mode 1)
-#+end_src
+
+Na Doom Emacs-u instalirano po Default-u
+
 ** Which key
-#+begin_src emacs-lisp
-(use-package! which-key
-  :init (which-key-mode)
-  :diminish which-key-mode
-  :config
-  (setq which-key-idle-delay 0))
-#+end_src
+
+Konfigurisano po default-u na Doom Emacsu.
+
 ** Ivy and Counsel
 
 [[https://oremacs.com/swiper/][Ivy]]je genericki completion alat ( koristi ivy-mode ).
@@ -223,19 +200,7 @@ Ako se u M-x u ne vidi opis funkcionalnosti, uraditi reset ivy-rich-mode-a
 ** Helpful
 
 koristi counsel funkcionalnosti i helpful funkcionalnosti da overriduje defaultna ponasanja emacs-a npr. za describe-function ili bilo koje druge describe- funkcionalnosti
-
-#+begin_src emacs-lisp
-  (use-package! helpful
-    :commands (helpful-callable helpful-variable helpful-command helpful-key)
-    :custom
-    (counsel-describe-function-function #'helpful-callable)
-    (counsel-describe-variable-function #'helpful-variable)
-    :bind
-    ([remap describe-function] . counsel-describe-function)
-    ([remap describe-command] . helpful-command)
-    ([remap describe-variable] . counsel-describe-variable)
-    ([remap describe-key] . helpful-key))
-#+end_src
+Na Doomu konfigurisano po default-u
 
 ** Text scaling
 *** Hydra
@@ -244,17 +209,17 @@ Hydra se koristi kod buffer cycling-a, ali i za skaliranje teksta
 Primer koriscenja: zamislimo da imamo C-c j i C-c k bindovano u konfiguraciji, i zelimo te dve komande da pozivamo u nekoj proizvoljnoj sekvenci, npr. C-c jjkkjkjkj, ovo nam dozvoljava Hydra paket, da ne pretiskamo C-c svaki put, vec samo jednom i da u sekvenci mozemo da zadajemo jjkkkjj naredbe, sto smo ovde iskoristili za povecavanje teksta.
 
 #+begin_src emacs-lisp
-  (use-package! hydra
-    :defer t)
+  ;; (use-package! hydra
+  ;;   :defer t)
 
-  (defhydra hydra-text-scale (:timeout 4)
-    "scale text"
-    ("j" text-scale-increase "in")
-    ("k" text-scale-decrease "out")
-    ("f" nil "finished" :exit t))
+  ;; (defhydra hydra-text-scale (:timeout 4)
+  ;;   "scale text"
+  ;;   ("j" text-scale-increase "in")
+  ;;   ("k" text-scale-decrease "out")
+  ;;   ("f" nil "finished" :exit t))
 
-  (zama/leader-keys
-    "ts" '(hydra-text-scale/body :which-key "scale text"))
+  ;; (zama/leader-keys
+  ;;   "ts" '(hydra-text-scale/body :which-key "scale text"))
 #+end_src
 
 * Org mode
@@ -323,28 +288,29 @@ Primer koriscenja: zamislimo da imamo C-c j i C-c k bindovano u konfiguraciji, i
   :hook (org-mode . efs/org-mode-visual-fill))
 #+end_src
 ** Configure babel languages
-
-#+begin_src emacs-lisp
-(with-eval-after-load 'org
-  (push '("conf-unix" . conf-unix) org-src-lang-modes))
-
-#+end_src
+    Doom ih konfigurise za nas...
 ** Structure templates
 #+begin_src emacs-lisp
-    (with-eval-after-load 'org
-      (require 'org-tempo)
+    ;; (with-eval-after-load 'org
+    ;;   (require 'org-tempo)
 
-      (add-to-list 'org-structure-template-alist '("el" . "src emacs-lisp"))
-      (add-to-list 'org-structure-template-alist '("py" . "src python"))
-      (add-to-list 'org-structure-template-alist '("lua" . "src lua"))
+    ;;   (add-to-list 'org-structure-template-alist '("el" . "src emacs-lisp"))
+    ;;   (add-to-list 'org-structure-template-alist '("py" . "src python"))
+    ;;   (add-to-list 'org-structure-template-alist '("lua" . "src lua"))
 
-      )
+    ;;   )
+
+(after! org
+  (require 'org-tempo)
+  (add-to-list 'org-structure-template-alist '("el" . "src emacs-lisp"))
+  (add-to-list 'org-structure-template-alist '("py" . "src python"))
+  (add-to-list 'org-structure-template-alist '("lua" . "src lua"))
+  )
 #+end_src
 
 ** Auto-tangle configuration files
 
 Basically automatically tangles this config file(saves it to another file), but just the codeblocks
-#+begin_src emacs-lisp
   ;; (defun efs/org-babel-tangle-config ()
   ;;   (when (string-equal (buffer-file-name)
   ;;                       (expand-file-name "~/.doom.d/config.org"))
@@ -353,13 +319,11 @@ Basically automatically tangles this config file(saves it to another file), but 
   ;;       (org-babel-tangle))))
 
   ;; (add-hook 'org-mode-hook (lambda () (add-hook 'after-save-hook #'efs/org-babel-tangle-config)))
-#+end_src
 
 No
 
 * Development
 ** Commenting
-
 Koristi se Evil nerd commenter, u Visual Line Mode(Shift-V) selektovati linije i pritisnuti *g c*
 
 ** Languages
@@ -368,73 +332,47 @@ Koristi se Evil nerd commenter, u Visual Line Mode(Shift-V) selektovati linije i
 LSP je Language Server Protocol koji se koristi da dostavi informaciju o autocompletion-u i slicnim stvarima vezanim za sintaksu jezika.
 
 #+begin_src emacs-lisp
-    (defun efs/lsp-mode-setup ()
-      (setq lsp-headerline-breadcrumb-segments '(path-up-to-project file symbols))
-      (lsp-headerline-breadcrumb-mode))
-
-    (use-package! lsp-mode
-      :commands(lsp lsp-deferred)
-      :hook(lsp-mode . efs/lsp-mode-setup)
-      :config
-      (lsp-enable-which-key-integration t))
-
-    (use-package! lsp-ui
-      :hook(lsp-mode . lsp-ui-mode)
-      :custom
-      (lsp-ui-doc-position 'bottom))
-
-    (use-package! lsp-treemacs
-      :after lsp);;lsp-treemacs menu
-    ;;we can also enable the sideline via lsp-ui-sideline-enable and lsp-ui-sideline-show-hover
-
-    (use-package! lsp-ivy
-      :after lsp)
-    ;;lsp-ivy-workspace-symbol usage
+(add-hook! lsp-mode
+  (defun breadcrumb-setup ()
+           (setq lsp-headerline-breadcrumb-segments '(path-up-to-project file symbols))
+           (lsp-headerline-breadcrumb-mode))
+    )
 #+end_src
 
 Usage of LSP - works only if language is provided:
 
-| command                      | shortcut    | description                                       |
-|------------------------------+-------------+---------------------------------------------------|
-| Find references              | C-c l g r   | Pronalazi sve reference selektovanog simbola radi |
-| Find definitions             | C-c l g g   | Isto kao iznad, samo pronalazi  definicije        |
-| Rename                       | C-c l r r   | Preimenuje selektovan simbol                      |
-| Flymake diagnostics buffer   |             | Dijagnostika gresaka u datom fajlu - greske, warn |
-| Code formatting              | C-c l = =   | Reformatira kod kako ih language serv. formatira  |
-| lsp-treemacs-symbols         | M-x command | Show a tree view of symbols in the file           |
-| lsp-treemacs-references      | M-x command | Show a tree view for refs of symbol under cursor  |
-| lsp-treemacs-error-list      | M-x command | Show a tree veiw for diagnostic msgs              |
-| lsp-ivy-workspace-symb       | M-x command | Search for a symbol name in the current project   |
-| lsp-ivy-global-workspace-sym | M-x command | Searches in all active project workspaces         |
-|                              |             |                                                  |
+| command                        | shortcut    | description                                       |
+|--------------------------------+-------------+---------------------------------------------------|
+| Find references                | C-c l g r   | Pronalazi sve reference selektovanog simbola radi |
+| Find definitions               | C-c l g g   | Isto kao iznad, samo pronalazi  definicije        |
+| Rename                         | C-c l r r   | Preimenuje selektovan simbol                      |
+| Flymake diagnostics buffer     |             | Dijagnostika gresaka u datom fajlu - greske, warn |
+| Code formatting                | C-c l = =   | Reformatira kod kako ih language serv. formatira  |
+| lsp-treemacs-symbols           | M-x command | Show a tree view of symbols in the file           |
+| lsp-treemacs-references        | M-x command | Show a tree view for refs of symbol under cursor  |
+| lsp-treemacs-error-list        | M-x command | Show a tree veiw for diagnostic msgs              |
+| lsp-ivy-workspace-symb         | M-x command | Search for a symbol name in the current project   |
+| lsp-ivy-global-workspace-sym   | M-x command | Searches in all active project workspaces         |
+| treemacs                       |             | Opens the treemacs view on the side               |
+| lsp-ui-sideline-enable         |             | Enables lsp-ui sideline (possibly won't work ?)   |
+| lsp-headerline-breadcrumb-mode |             | Enables breadcrumb for the project                |
 **** Documentation
 
 [[https://github.com/emacs-lsp/lsp-ui][LSP-UI documentation]]
-
-
-
 *** DAP mode and Debugging
 Dap-mode je paket za debugging putem Debugging Adapter Protocol. Debager za svaki jezik se konfigurise posebno
 [[https://github.com/emacs-lsp/dap-mode][Dokumentacija DAP-mode.]]
 
 
 #+begin_src emacs-lisp
-  (use-package! dap-mode
-    ;; Uncomment the config below if you want all UI panes to be hidden by default!
-    :custom
-    (lsp-enable-dap-auto-configure nil)
-    :config
-    ;; Set up Node debugging
-    (require 'dap-node)
+    ;; (require 'dap-node)
     ;; (dap-node-setup);; Automatically installs Node debug adapter if needed
-    (dap-ui-mode 1)
 
     ;; Sa "C-c l d" otvori se dap-hydra prozor za lakse debagovanje
     ;; (general-define-key
     ;;   :keymaps 'lsp-mode-map
     ;;   :prefix lsp-keymap-prefix
     ;;   "d" '(dap-hydra t :wk "debugger"))
-    )
 #+end_src
 
 Ukljucuje se sa *M-x Dap-debug-mode*, a onda ce pitati da se selektuje konfiguracioni templejt. LSP-mode mora biti aktivan u bufferu. Konfiguracije se moze menjati sa *M-x dap-debug-recent.*  Editovanje konfiguracija se vrsi sa *M-x dap-debug-edit-templates.*
@@ -487,46 +425,22 @@ Paleta komandi: *M-x dap-hydra*
 		VSCode cuva konfiguracije debuggera u *.vscode folderu( debug.json )* i to se moze iskoristiti i u Emacsu, jer je isti debugger adapter i debug protokol!
 
 *** TypeScript
-#+begin_src emacs-lisp
-  ;; (use-package! typescript-mode
-  ;;       :mode "\\.ts\\'"
-  ;;     :hook (typescript-mode . lsp-deferred)
-  ;;   :config
-  ;; (setq typescript-indent-level 2))
-#+end_src
-
+    Configured by default by Doom ( ? not confirmed )
 *** Lua
-
-#+begin_src emacs-lisp
-  ;; (use-package! lua-mode
-  ;;   :mode "\\.lua\\'"
-  ;;   :hook (lua-mode . lsp-deferred)
-  ;; )
-#+end_src
 
 **** Love minor mode
 
-#+begin_src emacs-lisp
-  ;; (use-package! love-minor-mode)
-#+end_src
-
+Lua and love minor mode active by default
 
 *** Python
 
-Kombinujemo Dap-mode i Lsp-mode za Python dev.
-
-#+begin_src emacs-lisp
-;; (use-package! lsp-pyright
-;;   :hook (python-mode . (lambda ()
-;;                          (require 'lsp-pyright)
-;;                          (lsp))))
-#+end_src
+Python mode sa Pyrightom aktiviran u init.el
 
 ***  C++
 
 #+begin_src emacs-lisp
-  (require 'dap-cpptools)
-  (add-hook 'c++-mode-hook 'lsp)
+  ;; (require 'dap-cpptools)
+  ;; (add-hook 'c++-mode-hook 'lsp)
 #+end_src
 
 
@@ -534,25 +448,7 @@ Kombinujemo Dap-mode i Lsp-mode za Python dev.
 
 Provides a nicer in-buffer completion interface.
 Company box further enhances the looks and icons and presentation
-
-#+begin_src emacs-lisp
-    (use-package! company
-      :after lsp-mode
-      :hook(lsp-mode . company-mode)
-      ;; :bind (:map company-active-map
-      ;;             ("<tab>" . company-complete-selection))
-      ;; (:map lsp-mode-map
-      ;;       ("<tab>" . company-indent-or-complete-common))
-      :custom
-      (company-minimum-prefix-length 1)
-      (company-idle-delay 0.0))
-
-    (use-package! company-box
-      :hook(company-mode . company-box-mode))
-#+end_src
-
-Hitting TAB is for completion
-
+Aktivno sve po defaultu od strane Doom-a
 ** Projectile
 
  Emacs ima koncept DIRECTORY LOCAL VARIABLES - kreira se fajl u repo folderu koji konfigurise emacs varijable, koje ce se primeniti na odredjene fajlove u projektu svaki put kad se otvori bafer koji cita fajl iz datog foldera:
@@ -564,18 +460,10 @@ Hitting TAB is for completion
 
 #+begin_src emacs-lisp
   ;;projectile project interaction library for emacs. Offers functionalities for projects
-  (use-package! projectile
-    :diminish projectile-mode
-    :config (projectile-mode)
-    :custom ((projectile-completion-system 'ivy))
-    :init
-    (when (file-directory-p "~/Projects") ;;NOTE: set this path to where you keep git repos
-      (setq projectile-project-search-path '("~/Projects"))) ;;NOTE: same for this
-    (setq projectile-switch-project-action #'projectile-dired))
 
-  ;; (use-package! counsel-projectile
-  ;;   :after projectile
-  ;;   :config (counsel-projectile-mode))
+  (use-package! counsel-projectile
+    :after projectile
+    :config (counsel-projectile-mode))
 #+end_src
 
 | funkcija                   | skracenica | opis                                         |
@@ -595,13 +483,8 @@ Hitting TAB is for completion
 | counsel-projectile-rg     |            | Grep komanda, samo sto trazi po celom projektu     |
 
 ** Basic Magit setup
-#+begin_src emacs-lisp
-  (use-package! magit
-    :commands magit-status
-    :custom
-    (magit-display-buffer-function #'magit-display-buffer-same-window-except-diff-v1))
 
-#+end_src
+Doom setupuje Magit korektno
 
 | Funkcija       | skracenica | opis                                                    |
 |----------------+------------+---------------------------------------------------------|
@@ -626,10 +509,8 @@ Hitting TAB is for completion
 | Force push     | C-x g p f  | Forsira push ako failuje sa nekim REFS-ovima            |
 
 ** Forge
-#+begin_src emacs-lisp
-  ;; (use-package! forge
-  ;;   :after magit);;pruza informacije o nekom repozitorijumu, zahteva autentifikaciju sa GitHubom da bi se koristila. PROCITATI DOKUMENTACIJU
-#+end_src
+
+Forge konfigurisan od strane Doom-a
 
 [[https://github.com/magit/forge][Documentation page for Forge]]
 
@@ -642,17 +523,14 @@ NOTE: konfigurisi GitHub token pre nego sto koristis Forge!
 ** Rainbow delimiters
 
 Delimiteri duginih boja kao visual aid tokom razvoja
-#+begin_src emacs-lisp
-(use-package! rainbow-delimiters
-  :hook (prog-mode . rainbow-delimiters-mode))
-#+end_src
-
+ Doom automatski regulise delimitere
 ** Devdocs - Emacs viewer for DevDocs
 
 It's a "Viewer" for documentation from the [[https://devdocs.io/][DevDocs website.]]
 
 #+begin_src emacs-lisp
-(use-package! devdocs)
+(use-package! devdocs
+  :commands(devdocs-install devdocs-search devdocs-lookup))
 #+end_src
 
 How to use:
@@ -674,6 +552,7 @@ This should integrate PowerShell on Windows with Emacs
 #+begin_src emacs-lisp
   (if (eq system-type 'windows-nt )
       (use-package! powershell
+        :commands shell
         :config
         ;; Change default compile command for powershell
         (add-hook 'powershell-mode-hook
@@ -683,77 +562,6 @@ This should integrate PowerShell on Windows with Emacs
 #+end_src
 
 Run command M-x powershell to run it
-
-** vterm
-
-This is the terminal emulator part specifically tailored for Linux OS-es(doesn't work on Windows)
-
-*** vterm
-
-Improved terminal emulator.
-Before installing, make sure you have the following dependencies installed:
-
-| dependency name | version | description                                                   |
-|-----------------+---------+---------------------------------------------------------------|
-| GNU Emacs       | >=25.1  | With module support - check that module-file-suffix isn't nil |
-| cmake           | >=3.11  | For makefiles                                                 |
-| libtool-bin     |         | Related issues: [[https://github.com/akermu/emacs-libvterm/issues/66][#66]] [[https://github.com/akermu/emacs-libvterm/issues/85#issuecomment-491845136][#85]]                                       |
-| libvterm        | >=0.1   | If it throws VTERM_COLOR during compilation, check [[https://github.com/akermu/emacs-libvterm/#frequently-asked-questions-and-problems][FAQ]]        |
-|                 |         |                                                               |
-
-#+begin_src emacs-lisp
-  (if (eq system-type 'gnu/linux)
-      (use-package! vterm
-        :commands vterm
-        :config
-        (setq term-prompt-regexp "^[^#$%\n]*[#$%>] *")
-        ;;(setq vterm-shell "zsh") ;;for custom shell launch
-        (setq vterm-max-scrollback 10000))
-    )
-#+end_src
-
-** Eshell
-
-#+begin_src emacs-lisp
-  (defun efs/configure-eshell ()
-    ;; Save command history when commands are entered
-    (add-hook 'eshell-pre-command-hook 'eshell-save-some-history)
-
-    ;; Truncate buffer for performance
-    (add-to-list 'eshell-output-filter-functions 'eshell-truncate-buffer)
-
-    ;; Bind some useful keys for evil-mode
-    (evil-define-key '(normal insert visual) eshell-mode-map (kbd "C-r") 'counsel-esh-history)
-    (evil-define-key '(normal insert visual) eshell-mode-map (kbd "<home>") 'eshell-bol)
-    (evil-normalize-keymaps)
-
-    (setq eshell-history-size         10000
-          eshell-buffer-maximum-lines 10000
-          eshell-hist-ignoredups t
-          eshell-scroll-to-bottom-on-input t))
-(if (eq system-type 'windows-nt )
-    (use-package! eshell-git-prompt
-      :after eshell)
-
-    (use-package! eshell
-      :hook (eshell-first-time-mode . efs/configure-eshell)
-      :config
-
-    (with-eval-after-load 'esh-opt
-      (setq eshell-destroy-buffer-when-process-dies t)
-      (setq eshell-visual-commands '("htop" "zsh" "vim")))
-
-    (eshell-git-prompt-use-theme 'powerline)))
-#+end_src
-
-*** Useful keybindings:
-| Shortcut            | Description                               |
-|---------------------+-------------------------------------------|
-| C-c C-p / C-c C-n   | Go back or forward in the buffer          |
-| M-p / M-n           | Go back and forward in the input history  |
-| C-c C-u             | Delete the current input string backwards |
-| counsel-esh-history | A searchable history of eshell            |
-
 * Dired
 
 ** Dired basics
@@ -832,9 +640,6 @@ Uses only a single instance of Dired
 #+begin_src emacs-lisp
   (use-package! dired-single
     :commands (dired dired-jump))
-
-  (use-package! all-the-icons-dired
-    :hook (dired-mode . all-the-icons-dired-mode))
 #+end_src
 
 | command             | shortcut | description                                 |

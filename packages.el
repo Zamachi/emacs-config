@@ -6,5 +6,4 @@
 (package! devdocs)
 (if (eq system-type 'windows-nt )
     (package! powershell)
-  (package! eshell-git-prompt)
-  (package! eshell))
+)
