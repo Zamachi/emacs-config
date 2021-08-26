@@ -157,6 +157,20 @@
 ;;   :prefix lsp-keymap-prefix
 ;;   "d" '(dap-hydra t :wk "debugger"))
 
+(use-package! pyvenv
+  :init
+  (setenv "WORKON_HOME" "~/.venvs/")
+  :config
+  ;; (pyvenv-mode t)
+
+  ;; Set correct Python interpreter
+  (setq pyvenv-post-activate-hooks
+        (list (lambda ()
+                (setq python-shell-interpreter (concat pyvenv-virtual-env "bin/python")))))
+  (setq pyvenv-post-deactivate-hooks
+        (list (lambda ()
+                (setq python-shell-interpreter "python3")))))
+
 ;; (require 'dap-cpptools)
 ;; (add-hook 'c++-mode-hook 'lsp)
 
