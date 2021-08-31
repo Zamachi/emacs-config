@@ -435,21 +435,27 @@ Lua and love minor mode active by default
 *** Python
 
     Kada se konfigurise Emacs kao Python IDE, potrebno je preduzeti sledece korake:
-        - Instalirati Pajton (3.3+ verzije) interpreter i sve potrebne dependency-je( automatski na Linux platformama ), *OBAVEZNO* instalirati *python3-venv* - neophodno da kreiramo virtuelno okruzenje za svaki projekat
-        - Instalirati *Pip* da bismo mogli instalirati dodatne pakete
-        - Napraviti *virtual environment* pomocu *venv* sa naredbom =python3 -m venv /path/to/new/virtual/environment=, gde je glavni direktorijum virtualnih okruzenja *$HOME(~) u .venvs folderu* , po defaultu( promeniti u konfiguraciji ispod ako je druga putanja u pitanju )
-        - Aktivirati virtuelno okruzenje sa =source ~/.venvs/ime-okruzenja/bin/activate=:
+        - Instalirati Pajton (3.3+ verzije) interpreter i sve potrebne dependency-je( automatski na Linux platformama ), *OBAVEZNO* instalirati *python3-venv* - neophodno da kreiramo virtuelno okruzenje za svaki projekat ( na Windowsu dolazi distribuirano uz sam Pajton ).
+        - Instalirati *Pip* da bismo mogli instalirati dodatne pakete - i to pip3! *sudo apt-get install python3-pip* na Ubuntu( na Windowsu je distribuirano zajedno sa Pajtonom )
+        - Napraviti *virtual environment* pomocu *venv* sa naredbom =python3 -m venv /path/to/new/virtual/environment=, gde je glavni direktorijum virtualnih okruzenja *$HOME(~) u .venvs folderu* , po defaultu( promeniti u konfiguraciji ispod ako je druga putanja u pitanju ). Na Winowsu koristiti samo python bez trojke. 
+        - Aktivirati virtuelno okruzenje sa =source ~/.venvs/ime-okruzenja/bin/activate=: na Linux sistemima. Na Windowsu pokrenuti =./venvs/ime-okruzenja/Scripts/activate.ps1= u Powershellu.
           + Kada smo u virtuelnom okruzenju, potrebno je instalirati naredbom =pip3 install ime-paketa=:
-            - *Lokalni* Python interpreter za trenutno virtuelno okruzenje
             - *isort* - da soritra importe
             - *Pyflakes* - Proverava greske u fajlu
-            - *Pyright* - language server koji koristimo u ovoj konfiguraciji( moze i bilo koji drugi language server )
+            - Language server za LSP protocol, 3 najzastupljenija:
+	    	1. *python-lsp-server* - instalirati sa =pip3 install python-lsp-server=
+		2. *mspyls* - pratiti instrukcije na: https://develop.spacemacs.org/layers/+lang/python/README.html#microsoft-python-language-server PAZNJA: mozda je potrebno, pored ovog Emacs plugin-a instalirati i globalno sam Microsoft Python server! 
+		3. *Pyright* - Microsoftov Python LS pisan u TypeScriptu. Pre svega je potrebno instalirati sam Pyright server, za to su nam neophodni *npm* i *node*. Kada njih instaliramo, pozivom komande =npm install -g pyright= cemo na globalnom nivou instalirati server. 
             - Dodatne potrebne biblioteke za projekat - npr. *Pillow*
+	    * Ako zelimo, mozemo i instalirati posebnu verziju Python interpretera koju ce projekat koristiti, za ovo koristimo *Pyenv* koji se dodatno konfigurise...
 
-    *AKO ZATREBA INSTALIRATI I NODE, NODEJS I NPM!* , u nekim slucajevima trazi da ima ove komponente instalirane
-    Takodje, *npm-om* je moguce globalno instalirati *Pyright* server, ali nije preporucljivo, u slucaju da zelimo da promenimo server za neki projekat.
+    Doom automatski prepozna sta je projekat( ako ima *.git* folder npr. ), dodatna konfiguracija najverovatnije nece biti potrebna, sve sto treba je da izaberemo virtuelno okruzenje koje ce koristiti projekat sa =pyvenv-= naredbama. Ukoliko je potrebno, projekat se moze konfigurisati sa *.dir-local.el* fajlom, na sledeci nacin:
+    
+    =((nil . ((pyvenv-workon . "ime-venva")))
+ (python-mode . ((python-backend . lsp)
+                 (python-lsp-server . pyright))))=
 
-    Doom automatski prepozna sta je projekat( ako ima *.git* fajl npr. ), dodatna konfiguracija najverovatnije nece biti potrebna, sve sto treba je da izaberemo virtuelno okruzenje koje ce koristiti projekat sa =pyvenv-= naredbama. Dodatno konfigurisati sa =SPC p e= da se setupuje *.dir-locals.el* ( iz nekog razloga meni nije radilo ).
+Izmeniti ime venva, i ime servera(ili backenda ako sek oristi anaconda) za sosptvene projekte.
 
     Na kraju je samo potrebno konfigurisati *pyvenv* paket koji upravlja Python *venv* okruzenjima( promeniti *WORKON_HOME* ako je putanja direktorijuma gde cuvamo okruzenja drugacija  ).
 
@@ -479,10 +485,6 @@ fooproject
 |--- .dir-locals.el
 |--- pyrightconfig.json
 
-U *.dir-locals.el* mozemo smestiti konfiguraciju gde nam se nalazi virtuelno okruzenje za dati projekat:
-
-- =(python-mode . ((pyvenv-workon . "ime-environmenta")))=
-
 *pyrightconfig.json* fajl je opcioni, ali takodje sluzi za konfiguraciju, samo sto se njime konfigurise *Pyright* server:
 
     {
@@ -497,8 +499,11 @@ U *.dir-locals.el* mozemo smestiti konfiguraciju gde nam se nalazi virtuelno okr
 }
 ^ *PRIMER KONFIGURACIJE*
 
+Ovime smo konkretno specificirali gde sve Pyright treba da se pokrene, dali smo src kao nivo celog foldera i svim *.py* fajlovima u njemu>
+
 Jos opcija za *pyrightconfig.json* na sledecem [[https://github.com/microsoft/pyright/blob/main/docs/configuration.md][linku]].
 
+PAZNJA: Projekat se umesto ugradjene *venv* funkcije moze konfigurisati i naprednijim *virtualenv* paketom, cak i sa *virtualenvwrapper* koji je napredniji od prethodnog, za ovo pogledati sledeci video: https://www.youtube.com/watch?v=r-BHx7VNX5s (NAPOMENA: u videu se projekat konfigurise za Python2! Ispratiti kako se konfigurise za Python3 i da li treba dodatno nastelovati *virtualenvwrapper* da radi u terminalu preko .bashrc i PATH varijabli).
 
 ***  C++
 
