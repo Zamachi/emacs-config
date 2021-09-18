@@ -3,8 +3,8 @@
       user-mail-address "dstefa.dimitrijevic7@gmail.com")
 
 ;;fontovi
-(setq  doom-font(font-spec :family "Fira Code" :height 220)
-       doom-variable-pitch-font(font-spec :family "Cantarell" :height 130))
+(setq  doom-font(font-spec :family "FiraCode NF" :size 14)
+       doom-variable-pitch-font(font-spec :family "FiraCode NF" :size 18))
 
 ;;doom theme
 (setq doom-theme 'doom-outrun-electric)
@@ -86,7 +86,7 @@
                   (org-level-6 . 1.1)
                   (org-level-7 . 1.1)
                   (org-level-8 . 1.1)))
-    (set-face-attribute (car face) nil :font "Cantarell" :weight 'regular :height (cdr face)))
+    (set-face-attribute (car face) nil :font "FiraCode NF" :weight 'regular :height (cdr face)))
 
   ;; Ensure that anything that should be fixed-pitch in Org files appears that way
   (set-face-attribute 'org-block nil :foreground nil :inherit 'fixed-pitch)
@@ -166,10 +166,15 @@
   ;; Set correct Python interpreter
   (setq pyvenv-post-activate-hooks
         (list (lambda ()
-                (setq python-shell-interpreter (concat pyvenv-virtual-env "bin/python")))))
+
+                (if (eq system-type 'windows-nt )
+                    (setq python-shell-interpreter (concat pyvenv-virtual-env "Scripts/python"))
+                  (setq python-shell-interpreter (concat pyvenv-virtual-env "bin/python"))))))
   (setq pyvenv-post-deactivate-hooks
         (list (lambda ()
-                (setq python-shell-interpreter "python3")))))
+                (if (eq system-type 'windows-nt )
+                    (setq python-shell-interpreter "python")
+                  (setq python-shell-interpreter "python3"))))))
 
 ;; (require 'dap-cpptools)
 ;; (add-hook 'c++-mode-hook 'lsp)

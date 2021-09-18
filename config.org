@@ -34,9 +34,10 @@ font string. You generally only need these two:
 #+begin_src emacs-lisp
 
 ;;fontovi
-(setq  doom-font(font-spec :family "Fira Code" :height 220)
-       doom-variable-pitch-font(font-spec :family "Cantarell" :height 130))
+(setq  doom-font(font-spec :family "FiraCode NF" :size 14)
+       doom-variable-pitch-font(font-spec :family "FiraCode NF" :size 18))
 #+end_src
+
 
 ** Color theme configuration
 
@@ -240,7 +241,7 @@ Primer koriscenja: zamislimo da imamo C-c j i C-c k bindovano u konfiguraciji, i
                   (org-level-6 . 1.1)
                   (org-level-7 . 1.1)
                   (org-level-8 . 1.1)))
-    (set-face-attribute (car face) nil :font "Cantarell" :weight 'regular :height (cdr face)))
+    (set-face-attribute (car face) nil :font "FiraCode NF" :weight 'regular :height (cdr face)))
 
   ;; Ensure that anything that should be fixed-pitch in Org files appears that way
   (set-face-attribute 'org-block nil :foreground nil :inherit 'fixed-pitch)
@@ -452,10 +453,10 @@ Lua and love minor mode active by default
 
 Doom automatski prepozna sta je projekat( ako ima *.git* folder npr. ), dodatna konfiguracija najverovatnije nece biti potrebna, sve sto treba je da izaberemo virtuelno okruzenje koje ce koristiti projekat sa =pyvenv-= naredbama. Ukoliko je potrebno, projekat se moze konfigurisati sa *.dir-local.el* fajlom, na sledeci nacin:
     
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle no
  ((nil . ((pyvenv-workon . "ime-venva")))
- 	(python-mode . ((python-backend . lsp)
- 			(python-lsp-server . pyright))))
+ 	(python-mode . ((python-backend . lsp);;NOTE works only for Spacemacs
+ 			(python-lsp-server . pyright))));;NOTE works only for Spacemacs
 #+end_src
 
 Izmeniti ime venva, i ime servera(ili backenda ako sek oristi anaconda) za sosptvene projekte.
@@ -472,10 +473,15 @@ Izmeniti ime venva, i ime servera(ili backenda ako sek oristi anaconda) za sospt
   ;; Set correct Python interpreter
   (setq pyvenv-post-activate-hooks
         (list (lambda ()
-                (setq python-shell-interpreter (concat pyvenv-virtual-env "bin/python")))))
+
+                (if (eq system-type 'windows-nt )
+                    (setq python-shell-interpreter (concat pyvenv-virtual-env "Scripts/python"))
+                  (setq python-shell-interpreter (concat pyvenv-virtual-env "bin/python"))))))
   (setq pyvenv-post-deactivate-hooks
         (list (lambda ()
-                (setq python-shell-interpreter "python3")))))
+                (if (eq system-type 'windows-nt )
+                    (setq python-shell-interpreter "python")
+                  (setq python-shell-interpreter "python3"))))))
 #+end_src
 
 
@@ -490,7 +496,7 @@ fooproject
 
 *pyrightconfig.json* fajl je opcioni, ali takodje sluzi za konfiguraciju, samo sto se njime konfigurise *Pyright* server:
 
-#+begin_src json
+#+begin_src json :tangle no
 {
   "include": [
     "src"
