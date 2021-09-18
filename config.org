@@ -46,7 +46,7 @@ font string. You generally only need these two:
  `load-theme' function.
 #+begin_src emacs-lisp
 ;;doom theme
-(setq doom-theme 'doom-outrun-electric)
+(setq doom-theme 'doom-horizon)
 #+end_src
 
 ** Number line mode
@@ -333,11 +333,11 @@ Koristi se Evil nerd commenter, u Visual Line Mode(Shift-V) selektovati linije i
 LSP je Language Server Protocol koji se koristi da dostavi informaciju o autocompletion-u i slicnim stvarima vezanim za sintaksu jezika.
 
 #+begin_src emacs-lisp
-(add-hook! lsp-mode
-  (defun breadcrumb-setup ()
+;;(add-hook! lsp-mode
+(defun lsp-breadcrumb-setup()
            (setq lsp-headerline-breadcrumb-segments '(path-up-to-project file symbols))
            (lsp-headerline-breadcrumb-mode))
-    )
+
 #+end_src
 
 Usage of LSP - works only if language is provided:
@@ -602,6 +602,12 @@ NOTE: konfigurisi GitHub token pre nego sto koristis Forge!
 
 Delimiteri duginih boja kao visual aid tokom razvoja
  Doom automatski regulise delimitere
+
+#+begin_src emacs-lisp
+(add-hook! lsp-mode
+           '(rainbow-delimiters-mode lsp-breadcrumb-setup))
+#+end_src
+
 ** Devdocs - Emacs viewer for DevDocs
 
 It's a "Viewer" for documentation from the [[https://devdocs.io/][DevDocs website.]]

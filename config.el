@@ -7,7 +7,7 @@
        doom-variable-pitch-font(font-spec :family "FiraCode NF" :size 18))
 
 ;;doom theme
-(setq doom-theme 'doom-outrun-electric)
+(setq doom-theme 'doom-horizon)
 
 (setq display-line-numbers-type t)
 (dolist (mode '(org-mode-hook
@@ -142,11 +142,10 @@
   (add-to-list 'org-structure-template-alist '("lua" . "src lua"))
   )
 
-(add-hook! lsp-mode
-  (defun breadcrumb-setup ()
+;;(add-hook! lsp-mode
+(defun lsp-breadcrumb-setup()
            (setq lsp-headerline-breadcrumb-segments '(path-up-to-project file symbols))
            (lsp-headerline-breadcrumb-mode))
-    )
 
 ;; (require 'dap-node)
 ;; (dap-node-setup);; Automatically installs Node debug adapter if needed
@@ -184,6 +183,9 @@
 (use-package! counsel-projectile
   :after projectile
   :config (counsel-projectile-mode))
+
+(add-hook! lsp-mode
+           '(rainbow-delimiters-mode lsp-breadcrumb-setup))
 
 (use-package! devdocs
   :commands(devdocs-install devdocs-search devdocs-lookup))
