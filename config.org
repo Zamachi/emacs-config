@@ -736,11 +736,11 @@ Uses only a single instance of Dired
 Allows us to open certain files in different programs (other than Emacs)
 
 #+begin_src emacs-lisp
-(use-package! dired-open
-  :commands (dired dired-jump)
-  :config
-  (setq dired-open-extensions '(("png" . "feh")
-                                ("mkv" . "mpv"))))
+;; (use-package! dired-open
+;;   :commands (dired dired-jump)
+;;   :config
+;;   (setq dired-open-extensions '(("png" . "feh")
+;;                                 ("mkv" . "mpv"))))
 #+end_src
 
 * Runtime performance

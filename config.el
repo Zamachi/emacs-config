@@ -214,10 +214,10 @@
 (use-package! dired-single
   :commands (dired dired-jump))
 
-(use-package! dired-open
-  :commands (dired dired-jump)
-  :config
-  (setq dired-open-extensions '(("png" . "feh")
-                                ("mkv" . "mpv"))))
+;; (use-package! dired-open
+;;   :commands (dired dired-jump)
+;;   :config
+;;   (setq dired-open-extensions '(("png" . "feh")
+;;                                 ("mkv" . "mpv"))))
 
 ;; (setq gc-cons-treshold (* 2 1000 1000))
